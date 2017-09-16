@@ -1,0 +1,49 @@
+<!doctype html public "-//w3c//dtd html 4.0 frameset//en">
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="Enrico Di Lorenzo">
+  <meta name="Generator" content="Enrico Di Lorenzo">
+  <meta name="Description" content="Help File">
+  <meta name="Version" content="050510">
+  <title>FasterCap Input Files</title>
+  <link href="../../helpstyle.css" rel="stylesheet" type="text/css">
+</head>
+
+<BODY>
+
+<H1>FasterCap 3D Input Files</H1>
+
+<H2>Dielectric definitions ('D' statement)</H2>
+
+<p><code>Syntax: D &lt;file&gt; &lt;outperm&gt; &lt;inperm&gt; &lt;xoffset&gt; &lt;yoffset&gt; &lt;zoffset&gt; &lt;xref&gt; &lt;yref&gt; &lt;zref&gt; [-]</code>
+
+
+<p>The 'D' element at the beginning of a line defines a dielectric. The geometry of the dielectric surface is further specified in the file <code>&lt;file&gt;</code>. The dielectric surface is intended as the interface between two regions with relative permettivities <code>&lt;outperm&gt;</code> and <code>&lt;inperm&gt;</code>. The relative permittivities <code>&lt;outperm&gt;</code> and <code>&lt;inperm&gt;</code> can be complex valued, in the format <i>eRe</i>-j<i>eIm</i>, where <i>eRe</i> is the real part of the complex permittivity value, and <i>eIm</i> is the imaginary part. 
+<br>The dielectric can be translated with respect to the coordinates defined in <code>&lt;file&gt;</code> by an offset <i>(xoffset, yoffset, zoffset)</i>, thus allowing to reuse the same geometric definitions multiple times.
+<br>The reference point <i>(xref, yref, zref)</i> and the optional <code>-</code> argument are used to specify which side of the dielectric interface has which permittivity. More specifically, the reference point is assumed to lie on the <code>&lt;outperm&gt;</code> side of all the panels in <code>&lt;file&gt;</code>. The optional <code>-</code> argument indicates that <i>(xref, yref, zref)</i> instead lies on the <code>&lt;inperm&gt;</code> side. The reference point is not translated, i.e. the offset only applies to the elements specified in <code>&lt;file&gt;</code>.
+
+<p><b>Remark:</b> it is the user's responsibility to make sure that the reference point is on the same side of the dielectric interface for <b>all</b> panels. That is, each panel is evaluated as stand-alone with respect to the reference point, to define its <code>&lt;outperm&gt;</code> and <code>&lt;inperm&gt;</code> sides. There is no concept of a external and internal side of a surface specified by a group of panels, even if specified in the same file with the same conductor names, since FasterCap maintains no topological information.
+
+<p>For complex shaped surfaces, FasterCap supports also the option to specify the reference point panel by panel, see <a href="InputFile_3D_ch06.htm">3D Triangular panel definitions ('T' statement)</a> and <a href="InputFile_3D_ch05.htm">3D Quadrilateral panel definitions ('Q' statement)</a> for details about the syntax.
+You can also mix the two type of panel definitions, i.e. panels without and panels with a per-panel reference point specification. In this case, panels without a reference point specified per panel will use the reference point specified for the whole dielectric interface in the 'D' statement.
+
+<p>Example 1:
+<br>&nbsp;
+<code>
+<br>D sphere.txt &nbsp;1.0 2.0 &nbsp;0.0 0.0 0.0 &nbsp;0.0 0.0 0.0 &nbsp;-
+</code>
+
+<p>This input file fragments specifies a dielectric interface whose geometry is defined in the file <i>sphere.txt</i>. The interior of the sphere is filled with a material with relative permittivity equal 2.0, since the reference point is centered on the origin and the optional <code>-</code> argument is specified; while the dielectric medium ouside the sphere has a relative permittivity equal to 1.0. 
+
+<p>Example 2:
+<br>&nbsp;
+<code>
+<br>D sphere.txt &nbsp;1.0 3.0-j0.02 &nbsp;0.0 0.0 0.0 &nbsp;0.0 0.0 0.0 &nbsp;-
+</code>
+
+<p>This input file fragments specifies a dielectric interface whose geometry is defined in the file <i>sphere.txt</i>. The interface is between air (relative permittivity equal to 1.0) and a lossy dielectric with complex relative permettivity equal to 3.0-j0.02 (e.g. with real part equal to 3.0 and imaginary part equal to 0.02).
+
+</body>
+</html>

@@ -1,0 +1,53 @@
+// IDL file for FasterCap
+//
+// {F99B4BC5-434E-4d11-8656-AE0AC816E586} = Type library's GUID
+// {4ACA654C-C56C-47d5-86F4-7B721F06E056} = FasterCap object's GUID
+// {80FDCF45-7F79-4409-8195-4FF9BB4BD5A3} = FasterCap VTable's GUID
+
+[uuid(F99B4BC5-434E-4d11-8656-AE0AC816E586), version(1.0), helpstring("FasterCap COM server")]
+library IFasterCap
+{
+	importlib("STDOLE2.TLB");
+
+	[uuid(80FDCF45-7F79-4409-8195-4FF9BB4BD5A3), dual, oleautomation, hidden, nonextensible]
+	interface IFasterCapVTbl : IDispatch
+	{
+		[helpstring("Check if FasterCap is running")]
+		[id(1)] HRESULT IsRunning([out, retval] VARIANT_BOOL *);
+		[helpstring("Show FasterCap window (hidden by default via Automation")]
+		[id(2)] HRESULT ShowWindow();
+		[helpstring("Quit FasterCap")]
+		[id(3)] HRESULT Quit([out, retval] VARIANT_BOOL *);
+		[helpstring("Get a SafeArray containing the capacitance matrix")]
+		[id(4)] HRESULT GetCapacitance([out, retval] VARIANT *);
+		[helpstring("Get a SafeArray containing the conductance matrix")]
+		[id(5)] HRESULT GetConductance([out, retval] VARIANT *);
+		[helpstring("Get a SafeArray containing the conductor names")]
+		[id(6)] HRESULT GetCondNames([out, retval] VARIANT *);
+		[helpstring("Run FasterCap with the provided command line")]
+		[id(7)] HRESULT Run([in] BSTR, [out, retval] VARIANT_BOOL *);
+		[helpstring("Stop FasterCap execution")]
+		[id(8)] HRESULT Stop();
+		[helpstring("Get FasterCap's execution time for last solve")]
+		[id(9)] HRESULT GetSolveTime([out, retval] float *);
+		[helpstring("Get FasterCap's max memory allocated during for last solve")]
+		[id(10)] HRESULT GetSolveMemory([out, retval] long *);
+		[helpstring("Get the total number of refined panels")]
+		[id(11)] HRESULT GetPanelsNum([out, retval] long *);
+		[helpstring("Get the total number of links between panels")]
+		[id(12)] HRESULT GetLinksNum([out, retval] long *);
+		[helpstring("Get FasterCap return status")]
+		[id(13)] HRESULT GetReturnStatus([out, retval] short *);
+		[helpstring("Set FasterCap Automation callback to signal end of execution")]
+		[id(14)] HRESULT SetEndCallback([in] LPDISPATCH, [in] BSTR, [out, retval] VARIANT_BOOL *);
+		[helpstring("Set FasterCap Automation callback to signal log messages")]
+		[id(15)] HRESULT SetLogCallback([in] LPDISPATCH, [in] BSTR, [out, retval] VARIANT_BOOL *);
+	};
+
+	[uuid(4ACA654C-C56C-47d5-86F4-7B721F06E056), helpstring("FasterCap document"), appobject]
+	coclass IFasterCap
+	{
+		[default] interface IFasterCapVTbl;
+	}
+}
+

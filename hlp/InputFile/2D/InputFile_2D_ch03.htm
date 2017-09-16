@@ -1,0 +1,52 @@
+<!doctype html public "-//w3c//dtd html 4.0 frameset//en">
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="Enrico Di Lorenzo">
+  <meta name="Generator" content="Enrico Di Lorenzo">
+  <meta name="Description" content="Help File">
+  <meta name="Version" content="050510">
+  <title>FasterCap Input Files</title>
+  <link href="../../helpstyle.css" rel="stylesheet" type="text/css">
+</head>
+
+<BODY>
+
+<H1>FasterCap 2D Input Files</H1>
+
+<H2>Conductor definitions ('C' statement)</H2>
+
+<p><code>Syntax: C &lt;file&gt; &lt;outperm&gt; &lt;xoffset&gt; &lt;yoffset&gt; [+]</code>
+
+
+<p>The 'C' element at the beginning of a line defines a conductor. The geometry of the conductor surface is further specified in the file <code>&lt;file&gt;</code>. The conductor is assumed embedded in an homogeneous dielectric medium with relative permettivity <code>&lt;outperm&gt;</code>. The relative permittivity <code>&lt;outperm&gt;</code> can be complex valued, in the format <i>ere</i>-j<i>eim</i>, where <i>ere</i> is the real part of the complex permittivity value, and <i>eim</i> is the imaginary part. The conductor can be translated with respect to the coordinates defined in <code>&lt;file&gt;</code> by an offset <i>(xoffset, yoffset)</i>, thus allowing to reuse the same geometric definitions multiple times.
+<br>The optional <code>+</code> argument is used to merge the current conductor with the next one, thus treating them a single conductor. With this option, panels with the same conductor name in different files will belong to the same conductor (see panels definitions for more information about conducor naming).
+
+<p>Example 1:
+<br>&nbsp;
+<code>
+<br>C circle_0.2_fine.txt 1.0&nbsp;&nbsp;0.0 0.0
+</code>
+
+<p>This input file fragments specifies a conductor whose geometry is defined in the file <code>circle_0.1_fine.txt</code>, embedded in a dielectric with permettivity equal to one (e.g. air), and translated to the position <i>(0.0, 0.0)</i>. 
+
+<p>Example 2:
+<br>&nbsp;
+<code>
+<br>C microstrip_top_0.03.txt 1.0&nbsp;&nbsp;-0.025 0.01 +
+<br>C microstrip_bottom_0.03.txt 2.0&nbsp;&nbsp;-0.025 0.01
+</code>
+
+<p>This input file fragments specifies a conductor made of two parts in contact with two dielectric materials with different relative permittivities. It is considered a single conductor since the first statement ends by <code>+</code>, thus collating the two elements; i.e. the two parts are considered short-circuited together.
+
+<p>Example 3:
+<br>&nbsp;
+<code>
+<br>C circle_0.005.txt 4.0-j3.016e6&nbsp;&nbsp;0.0 0.02
+</code>
+
+<p>This input file fragments specifies a conductor whose geometry is defined in the file <code>circle_0.005.txt</code>, embedded in a dielectric with complex relative permettivity equal to 4.0-j3.016e6 (e.g. with real part equal to 4.0 and imaginary part equal to 3.016e6), and translated to the position <i>(0.0, 0.02)</i>. 
+
+</body>
+</html>

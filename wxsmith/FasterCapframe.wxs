@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<wxsmith>
+	<object class="wxFrame" name="FasterCapFrame">
+		<title>FasterCap</title>
+		<handler function="OnClose" entry="EVT_CLOSE" />
+		<object class="wxBoxSizer" variable="BoxSizer1" member="no">
+			<object class="sizeritem">
+				<object class="wxPanel" name="ID_PANEL1" variable="Panel1" member="yes">
+					<object class="wxFlexGridSizer" variable="FlexGridSizer1" member="no">
+						<cols>1</cols>
+						<growablecols>0</growablecols>
+						<growablerows>0</growablerows>
+						<object class="sizeritem">
+							<object class="wxTextCtrl" name="ID_TEXTCTRL1" variable="TextOutputWindow" member="yes">
+								<size>1000,400</size>
+								<font>
+									<size>10</size>
+									<family>teletype</family>
+								</font>
+								<style>wxTE_AUTO_SCROLL|wxTE_PROCESS_ENTER|wxTE_PROCESS_TAB|wxTE_MULTILINE|wxTE_RICH|wxTE_RICH2</style>
+							</object>
+							<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+							<option>1</option>
+						</object>
+					</object>
+				</object>
+				<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+				<option>1</option>
+			</object>
+		</object>
+		<object class="wxMenuBar" variable="MenuBar1" member="no">
+			<object class="wxMenu" variable="Menu1" member="no">
+				<label>&amp;File</label>
+				<object class="wxMenuItem" name="idMenuQuit" variable="MenuItem1" member="no">
+					<label>Quit</label>
+					<accel>Alt-F4</accel>
+					<help>Quit the application</help>
+					<handler function="OnQuit" entry="EVT_MENU" />
+				</object>
+			</object>
+			<object class="wxMenu" variable="Menu3" member="no">
+				<label>&amp;Edit</label>
+				<object class="wxMenuItem" name="ID_MENUITEM1" variable="MenuItem6" member="yes">
+					<label>Clear &amp;All</label>
+					<handler function="OnMenuEditClearAll" entry="EVT_MENU" />
+				</object>
+			</object>
+			<object class="wxMenu" variable="Menu4" member="no">
+				<label>&amp;View</label>
+			</object>
+			<object class="wxMenu" variable="Menu5" member="no">
+				<label>FasterCap</label>
+				<object class="wxMenuItem" name="ID_MENU_RUN" variable="MenuItem3" member="no">
+					<label>Run</label>
+					<help>Open and run a FasterCap file</help>
+					<handler function="OnMenuRun" entry="EVT_MENU" />
+				</object>
+				<object class="wxMenuItem" name="ID_MENU_STOP" variable="MenuItem4" member="no">
+					<label>Stop</label>
+					<help>Stop FasterCap execution</help>
+					<handler function="OnMenuStop" entry="EVT_MENU" />
+				</object>
+			</object>
+			<object class="wxMenu" variable="Menu2" member="no">
+				<label>Help</label>
+				<object class="wxMenuItem" name="ID_MENU_HELP_TOPICS" variable="MenuItem5" member="no">
+					<label>Help Topics</label>
+					<accel>F1</accel>
+					<help>Display help</help>
+					<handler function="OnHelp" entry="EVT_MENU" />
+				</object>
+				<object class="separator" />
+				<object class="wxMenuItem" name="idMenuAbout" variable="MenuItem2" member="no">
+					<label>About FasterCap...</label>
+					<accel>F2</accel>
+					<help>Show program information, version and copyright</help>
+					<handler function="OnAbout" entry="EVT_MENU" />
+				</object>
+			</object>
+		</object>
+		<object class="wxStatusBar" name="ID_STATUSBAR1" variable="StatusBar1" member="yes">
+			<fields>1</fields>
+			<widths>-1</widths>
+			<styles>wxSB_NORMAL</styles>
+		</object>
+		<object class="wxToolBar" name="ID_TOOLBAR1" variable="ToolBar1" member="yes">
+			<object class="tool" name="ID_TOOLBARITEM_RUN" variable="ToolBarItem1" member="yes">
+				<label>Open</label>
+				<bitmap stock_id="wxART_FILE_OPEN" stock_client="wxART_TOOLBAR" />
+				<handler function="OnMenuRun" entry="EVT_TOOL" />
+			</object>
+		</object>
+	</object>
+</wxsmith>

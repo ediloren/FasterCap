@@ -1,0 +1,96 @@
+<!doctype html public "-//w3c//dtd html 4.0 frameset//en">
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="Enrico Di Lorenzo">
+  <meta name="Generator" content="Enrico Di Lorenzo">
+  <meta name="Description" content="Help File">
+  <meta name="Version" content="050510">
+  <title>Running FasterCap</title>
+  <link href="../helpstyle.css" rel="stylesheet" type="text/css">
+</head>
+
+<BODY>
+
+<H1>Running FasterCap</H1>
+
+<H2>Run Menu dialog box</H2>
+
+The FasterCap Run Menu dialog box contains many options. In the following, the different options will be explained in detail, with reference to the Run Menu figure here below.
+
+<p><img src="../Images/FasterCapRun01.png">
+
+<h3>Input file name</h3>
+
+<p>This information is mandatory to run the simulation. This is the file name of the root file containing FasterCap input data (see <a href="../InputFile/InputFile_main.htm">FasterCap Input Files</a> for more information about input files). The file name can also include path information, or you can browse for the file using the dedicated button.
+
+<h3>Automatic settings</h3>
+
+<p>For most simulations, you can rely on FasterCap to automatically adjust the settings to converge to a solution within the given error tolerance.
+
+<p>In this case, you must check the box <b>'Automatically calculate settings'</b> and enter a value into the <b>'Stop when relative error is lower than (-a)'</b> field. This value is the desired residual tolerance on the error, calculated as the Frobenius norm of the weighted capacitance matrix difference (this is one of the standard ways to measure the difference between two matrices).
+<br>For example, a value of 0.01 means a residual error of 1%, a value of 0.05 a resudual error of 5%, and so on.
+
+<p>You can also select if FasterCap should make an automatic choice of the preconditioner, to try to accelerate the solution (by performing less iterations); in this case, you must check the box <b>'Automatic preconditioner usage (-ap)'</b>. There are reasons why you would not want the preconditioner to be automatically selected, in this case uncheck the box and specify the type of preconditioner you want to use in the 'Common settings' group (see below).
+
+<h3>Manual settings</h3>
+
+<p>If you want absolute control over your simulation, you can force FasterCap to follow the manual settings.
+<br>In this case, you must NOT check the box <b>'Automatically calculate settings'</b> and enter a value in all the fields of this section.
+
+<ul>
+ 
+  <li><b>'Mesh relative refinement value (-m)'</b> controls the maximum refinement allowed on the input geometry. The lower the value, the more accurate the result, but simulation time will increase accordingly.
+
+  <li><b>'Gmres iteration tolerance (-t)'</b> controls the error below which the iterative solver will stop. This controls the relative error of the solution. 
+  <br>For example, a value of 0.01 means a residual error of 1%, a value of 0.05 a resudual error of 5%, and so on.
+  <br>Remark: the accuracy of the capacitance value that can be obtained with this parameter is limited by the refinement level of the mesh. If the mesh is too coarse, lowering this number will give no benefit. 
+  
+</ul>
+
+<h3>Common settings</h3>
+
+<ul>
+
+  <li><b>'Direct potential interaction coefficient to mesh refinement ratio (-d)'</b> controls the degree of matrix compression. FasterCap stores the panels set and their relationships ('links') in a hierarchical structure, representing the interaction matrix. The '-d' parameter specifies the compression of the links with respect to the panels mesh information as specified with the 'Mesh relative refinement value (-m)' parameter (either manually set or automatically calculated in the 'Auto' mode). A lower value of the '-d' parameter means more links per panel on the average, and in principle a more accurate result; but simulation time will increase accordingly.
+  
+    <li><b>'Mesh curvature coefficient (-mc)'</b> controls the ratio of refinement with respect to the local curvature in the input geometry (gradient meshing). A mesh curvature coefficient equal to 1.0 means no gradient in the meshing, i.e. local curvature is not considered when meshing. Increasing values of this parameter lead to a stronger refinement of the mesh around edges, corners and regions with high curvature.  
+  
+    <li><b>'Out-Of-Core free memory to link memory condition (0 = don't go OOC) (-f)'</b> define the condition upon which FasterCap will go Out-Of-Core. Going Out-Of-Core means that the largest internal data structures that may not fit in the physical RAM memory available on the host machine will be stored on the hard-disk. (note: this is quite different from the swap file used by the operating system, since OOC files are highly optimized for FasterCap speed). Going OOC will allow to solve problems with huge dimensions, at the price of an increased solution time, since disk access operations are not as fast as memory accesses.
+    <br>A value equal to zero will prevent FasterCap to go Out-Of-Core, no matter how little memory is available. Values greater than zero will cause FasterCap to go OOC when the estimated available memory ('free' memory) is less than n times the memory needed to store the interaction links between the panels, where 'n' is the 'Out-Of-Core free memory to link memory condition' parameter.
+    
+    <li><b>'Use Galerkin scheme (-g)'</b> causes FasterCap to employ a Galerkin scheme in the solution, instead of collocation. This can lead to an improved accuracy in the calculated capacitance values, for the same mesh level, without consuming more memory, but at the cost of additional calculation time.
+    <p><b>Remark:</b>This option is not supported at the moment for 2D capacitance extraction.
+
+    <li><b>'Use Jacobi Preconditioner (-pj)'</b> instructs FasterCap to use a Jacobi preconditioning scheme to reduce the overall simulation time. The preconditioner aims to lower the number of passes needed for the GMRES iterative algorithm to converge (i.e. the number of the iterations shown as progressive numbers in the FasterCap output).
+    <br>The Jacobi preconditioner is the simplest kind of preconditioner, and also the least powerful. It is most effective for non-homogeneous dimensions of the panels in the mesh, or for simulations including dielectrics, while for homogeneous meshes of conductors it has no effect. It has however the advantage of not requiring the allocation of additional memory with respect to using no preconditioner.
+    
+  <li><b>'Use Two-levels Preconditioner'</b> instructs FasterCap to use a more powerful preconditioning scheme to reduce the overall simulation time. The preconditioner aims to lower the number of passes needed for the GMRES iterative algorithm to converge (i.e. the number of the iterations shown as progressive numbers in the FasterCap output).
+  <br>The two-levels preconditioner is effective also for homogeneous cases, and work best when there are clusters of conductors far away from each other. However, in general a preconditioner has a cost in terms of set-up time, so it is most beneficial for meshes containing a large number of panels. 
+
+  <li><b>'Two-levels Preconditioner dimension (-ps)'</b> controls the dimension of the preconditioner. The bigger the preconditioner, the less the number of iterations required to converge to the solution, but the simulation time will increase accordingly. This parameter should be kept to a value for which the preconditioner calculation time is a fraction of the overall simulation time.
+  
+</ul>
+
+<h3>General Options</h3>
+
+<p>These options can always be selected or not, independently from automatic or manual settings.
+
+<ul>
+  <li><b>'Output refined geometry in FastCap2 format (-o)'</b> dumps the FasterCap mesh geometry at the end of the refinement phase to a set of files, in the same directory of the input file. These files are in FastCap2 compatible format, so can be input to FastCap2 and to FastModel. This option is useful for instance for comparison of FasterCap results with FastCap2 results, or to see the refined mesh in FasterCap. Please be aware however that for high levels of refinement the output files can be huge, and can also take some time to be stored on the mass memory device. 
+  <br>The main file is named as the specified input file, with the extension '_ref.lst'. All the other input files are referenced inside this main file.
+
+  <li><b>'Dump Gmres residual at each iteration (-r)'</b> causes FasterCap to dump at each iteration of the iterative solver the relative residual GMRES error near the iteration number.
+  
+  <li><b>'Dump charge densities in output file (-c)'</b> dumps a set of FasterCap mesh geometries containing charge densities information. One set of files is output, in the same directory of the input file, for each conductor specified. These files are in FastModel compatible format, so they can be loaded into FastModel for charge density visualization.  Please be aware however that for high levels of refinement the output files can be huge, and can also take some time to be stored on the mass memory device. 
+  <br>The main files are named after the specified input file, merged with the conductor name, with the extension '.lst'. All the other input files are referenced inside the main files.
+  
+  <li><b>'Dump detailed time and memory information (-m)'</b> causes FasterCap to dump in the output text detailed time and memory information for each of the phases in the solution.
+  
+  <li><b>'Verbose output (-v)'</b> instructs FasterCap to dump in the output text verbose information about what it is doing. While this is not normally useful, it can assist the troubleshooting in case of errors reported by FasterCap, by providing additional information.
+  
+</ul>
+
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!doctype html public "-//w3c//dtd html 4.0 frameset//en">
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="Enrico Di Lorenzo">
+  <meta name="Generator" content="Enrico Di Lorenzo">
+  <meta name="Description" content="Help File">
+  <title>Welcome to FasterCap</title>
+  <link href="helpstyle.css" rel="stylesheet" type="text/css">
+</head>
+
+<BODY>
+
+<table width=100% border=0 cellspacing=0 cellpadding=0>
+  <tr height=48> 
+    <td><div align="center" class="heading">FasterCap User Guide</div></td>
+  </tr>
+  <tr>
+    <td class="lineColour"></td>
+  </tr>
+</table>
+
+<H1>Welcome to FasterCap !</H1>
+
+<p>FasterCap is a powerful three-dimensional capactiance extraction program.
+<p>Build upon state-of-the-art technology, FasterCap improves the capabilities of the premium 'golden reference' FastCap software, while preserving the accuracy for which FastCap is renowed. FasterCap is faster, requires less memory, and provides additional capabilities with respect to FastCap.
+
+<H2>Features include: </H2>
+<ul>
+
+<li> 3D and 2D solver capabilities
+      <p>FasterCap is able to handle 3D models as well as <strong>native 2D models</strong> for faster simulation where only the cross-section of the structure is of interest (e.g. transmission lines)
+
+  <li> Support of lossy dielectric mediums
+      <p>Specifying complex permittivity values, you can simulate the presence of <strong>lossy dielectrics</strong>
+ 
+ <li> Linear solution time with respect to the number of panels N.
+      <p>The time needed to compute the self and mutual capacitances between the input set of conductors increases only linearly with the overall number of panels N. This feature is guaranteed by the <strong>O(N) complexity</strong> of the underlying algoritm, no matter the shape, orientation and size of the input geometries
+      
+  <li> Support for arbitraty shaped dielectric interfaces
+        <p>FasterCap supports Dielectric regions composed of <strong>any number of constant-permittivity regions</strong> of any shape and size
+	
+  <li> Support for triangular and quadrilateral input elements
+	<p>FasterCap supports the definition of the input geometry using either <strong>triangular or quadrilateral input elements</strong>, for maximum flexibility.
+ 
+  <li> Full Automation support, for solver control by remote programs
+	<p><strong><a href="Automation\FasterCapAutomationOverview.htm">Full automation support</a></strong> allows to fully control FasterCap from other programs, either in foreground or in background, using a standard interface. Thanks to this capability, FasterCap can be used as an embedded engine in your application, in a fast and smart way.
+  
+  <li> Automatic mesh refinement
+	<p> FasterCap can <strong>automatically refine</strong> the input geometry mesh until result convergence is reached, within a preset error threshold. Therefore, the user is free from the burden to provide more and more refined version of the input geometry to reach the requested accuracy of the results.
+	
+  <li> Handling of very large models, with improved speed and reduced memory requirements
+	<p>FasterCap is able handle <strong>very large, non-homogeneous geometries</strong>, easily breaking the barrier of one million panels in the mesh. This is thanks to the capability to achieve the solution in a <strong>shorter time and with smaller memory requirements</strong> with respect to FastCap.
+ 
+  <li> Out-of-core capability
+	<p>Memory requirement, more than solution time, is the bottleneck of modern field simulations, limiting the maximum addressable system dimension. To overcame the RAM memory limits, imposed by the cost / GB, FasterCap is able to go out-of-core, that is, to resort to the much larger storage capacity of the hard disk. Using smart algorithms for streamlining the data structure organization on the hard disk, FasterCap is able to <strong>efficiently make use of the mass memory support</strong> to run <strong>huge simulations</strong> in a convenient time tradeoff.
+
+  <li> Speed-independency from non-uniform geometries in space
+ 	<p>Thanks to the underlying data structures not requiring a uniform 3D partition of the model building box, as in most tree codes, the <strong>geometry can be highly non-uniform</strong> in space (the 'teapot in stadium' problem), without hampering the speed, the accuracy or the memory required to handle the model.
+
+  <li> Multi-core parallel execution
+	<p>FasterCap leverages <strong>multi-core parallel execution</strong> capabilities of modern machines to run time-critical funcitons over multiple processor, for maximum speed gain. 
+	
+  <li> Hierarchical input files support
+   	<p>FasterCap extends the flexibility of the FastCap input files, to handle hierarchical input files. This capability allows to <strong>overcome the limit of two levels of hierarchy</strong> imposed by FastCap. You can therefore define your geometry in a very structured way, with maximum reuse of the different items definition.
+	
+  <li> Charge density output for visualization in FastModel
+   	<p>The <strong>charge densities</strong> calculated for the set of conductors at each capacitance matrix column sweep can be output to a file, that <strong>can be loaded into FastModel</strong> for easy visualization.
+	
+  <li> Input file syntax compatible with FastCap
+	<p> FasterCap is <strong>100% compatible with FastCap</strong> generic file format, thus preserving your existing import/export interfaces.
+	
+  <li> Refined model output in FastCap compatible format
+	<p> FasterCap optionally can <strong>dump in FastCap-compatible file a copy of the final refined mesh</strong>, thus enabling you to use FasterCap as a tool to refine the input geometry, and to run the same simulation in FastCap. This allows a straightforward benchmarking between the two solvers.
+ 
+</ul>
+
+
+
+
+<p>Visit our web site <a href="http://www.fastfieldsolvers.com"> FastFieldSolvers </a> for new releases, support, customization and many other services!
+
+<p>&nbsp;
+<p><center><small>Copyright FastFieldSolvers S.R.L. 2014 - All rights reserved</small></center>
+</body>
+</html>

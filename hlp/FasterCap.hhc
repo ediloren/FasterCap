@@ -1,0 +1,206 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD><BODY>
+<OBJECT type="text/site properties">
+	<param name="ImageType" value="Folder">
+</OBJECT>
+<UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Introduction">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Welcome to FasterCap">
+			<param name="Local" value="WelcometoFasterCap.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Input files">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Overview">
+			<param name="Local" value="InputFile\InputFile_main.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="3D Input Files">
+			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Input File Structure">
+				<param name="Local" value="InputFile\3D\InputFile_3D_ch02.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Conductor definitions">
+				<param name="Local" value="InputFile\3D\InputFile_3D_ch03.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Dielectric definitions">
+				<param name="Local" value="InputFile\3D\InputFile_3D_ch04.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Quadrilateral panel definitions">
+				<param name="Local" value="InputFile\3D\InputFile_3D_ch05.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Triangular panel definitions">
+				<param name="Local" value="InputFile\3D\InputFile_3D_ch06.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Name definitions">
+				<param name="Local" value="InputFile\3D\InputFile_3D_ch07.htm">
+				</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="2D Input Files">
+			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Input File Structure">
+				<param name="Local" value="InputFile\2D\InputFile_2D_ch02.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Conductor definitions">
+				<param name="Local" value="InputFile\2D\InputFile_2D_ch03.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Dielectric definitions">
+				<param name="Local" value="InputFile\2D\InputFile_2D_ch04.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Straight segment definitions">
+				<param name="Local" value="InputFile\2D\InputFile_2D_ch05.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Name definitions">
+				<param name="Local" value="InputFile\2D\InputFile_2D_ch07.htm">
+				</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Single Input File">
+			<param name="Local" value="InputFile\InputFile_single_file.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Running FasterCap">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Run dialog">
+			<param name="Local" value="Run\Run_ch01.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Launching FasterCap from the shell">
+			<param name="Local" value="Run\Run_ch02.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Launching FasterCap through Automation">
+			<param name="Local" value="Run\Run_ch03.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="FasterCap Output">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Overview">
+			<param name="Local" value="Output\Output_ch01.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Output Header">
+			<param name="Local" value="Output\Output_ch02.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Output Iteration information">
+			<param name="Local" value="Output\Output_ch03.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Output tail">
+			<param name="Local" value="Output\Output_ch04.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Automation">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="FasterCap Automation Overview">
+			<param name="Local" value="Automation\FasterCapAutomationOverview.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="FasterCap Automation Examples">
+			<param name="Local" value="Automation\AutomationExamples.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Reference">
+			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Methods">
+				</OBJECT>
+			<UL>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="Run">
+					<param name="Local" value="Automation\RunMethod.htm">
+					</OBJECT>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="Stop">
+					<param name="Local" value="Automation\StopMethod.htm">
+					</OBJECT>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="Quit">
+					<param name="Local" value="Automation\QuitMethod.htm">
+					</OBJECT>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="ShowWindow">
+					<param name="Local" value="Automation\ShowWindowMethod.htm">
+					</OBJECT>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="GetCapacitance">
+					<param name="Local" value="Automation\GetCapacitanceMethod.htm">
+					</OBJECT>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="GetConductance">
+					<param name="Local" value="Automation\GetConductanceMethod.htm">
+					</OBJECT>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="GetCondNames">
+					<param name="Local" value="Automation\GetCondNamesMethod.htm">
+					</OBJECT>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="SetEndCallback">
+					<param name="Local" value="Automation\SetEndCallbackMethod.htm">
+					</OBJECT>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="SetLogCallback">
+					<param name="Local" value="Automation\SetLogCallbackMethod.htm">
+					</OBJECT>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="GetSolveTime">
+					<param name="Local" value="Automation\GetSolveTimeMethod.htm">
+					</OBJECT>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="GetSolveMemory">
+					<param name="Local" value="Automation\GetSolveMemoryMethod.htm">
+					</OBJECT>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="GetReturnStatus">
+					<param name="Local" value="Automation\GetReturnStatusMethod.htm">
+					</OBJECT>
+			</UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Properties">
+				</OBJECT>
+			<UL>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="IsRunning">
+					<param name="Local" value="Automation\IsRunningProperty.htm">
+					</OBJECT>
+			</UL>
+		</UL>
+	</UL>
+</UL>
+</BODY></HTML>

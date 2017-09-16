@@ -1,0 +1,216 @@
+<!doctype html public "-//w3c//dtd html 4.0 frameset//en">
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="Enrico Di Lorenzo">
+  <meta name="Generator" content="Enrico Di Lorenzo">
+  <meta name="Description" content="Help File">
+  <meta name="Version" content="050510">
+  <title>FasterCap Output</title>
+  <link href="../helpstyle.css" rel="stylesheet" type="text/css">
+</head>
+
+<BODY>
+
+<H1>FasterCap Output</H1>
+
+<H2>Output text</H2>
+
+<p>FasterCap, while running, provides many informations about what it is doing, plus the result of the calculations.
+
+<p>Here below you can see a copy of FasterCap output text for the capacitance calculation of the two cubes problem, as shown in the <a href="../InputFile/3D/InputFile_3D_ch02.htm">Input File Structure</a> section.
+
+<p>In the next pages you can find more information about each section of the output text
+
+<ul>
+  <li><a href="Output_ch02.htm">Output header</a>
+  <li><a href="Output_ch03.htm">Output Iteration information</a>
+  <li><a href="Output_ch04.htm">Output tail</a>
+ </ul>
+ 
+<p>&nbsp;
+
+<code>
+<br>Running FasterCap version 5.0.2
+<br>Copyright 2013 FastFieldSolvers S.r.l. http://www.fastfieldsolvers.com, All Rights reserved
+<br>Starting capacitance extraction with the following parameters:
+<br>Input file: C:\Documents and Settings\All Users\Documents\FastFieldSolvers\FasterCap\cubes.lst
+<br>Auto calculation with max error: 0.01
+<br>Remark: Auto option overrides all other Manual settings
+<br>&nbsp;
+<br>Solution scheme (-g): Collocation, GMRES tolerance (-t): 0.005
+<br>Out-of-core free memory to link memory condition (-f): 5
+<br>Potential interaction coefficient to mesh refinement ratio (-d): 1
+<br>Mesh curvature (-mc): 3
+<br>Number of input panels to solver engine: 24
+<br>&nbsp;
+<br>Iteration number #0 ***************************
+<br>&nbsp;
+<br>***************************************
+<br>Refining the geometry.. 
+<br>Refinement completed
+<br>Mesh refinement (-m): 1e+032
+<br>***************************************
+<br>Computing the links.. 
+<br>Number of panels after refinement: 24
+<br>Number of links to be computed: 46
+<br>Done computing links
+<br>***************************************
+<br>Precond Type(s) (-p): Jacobi 
+<br>GMRES Iteration: 0 1 
+<br>GMRES Iteration: 0 1 
+<br>Capacitance matrix is:
+<br>Dimension 2 x 2
+<br>g1_mycube  6.49181e-011 -2.07808e-011 
+<br>g2_mycube  -1.76613e-011 6.49235e-011 
+<br>&nbsp;
+<br>Solve statistics:
+<br>Number of input panels: 12 of which 12 conductors and 0 dielectric
+<br>Number of input panels to solver engine: 24
+<br>Number of panels after refinement: 24
+<br>Number of potential estimates: 23
+<br>Number of links: 70 (uncompressed 576, compression ratio is 87.8%)
+<br>Max recursion level: 5
+<br>Max Mesh relative refinement value: 0.0533222
+<br>Iteration time: 0.069000s (0 days, 0 hours, 0 mins, 0 s)
+<br>Iteration allocated memory: 12330 kilobytes
+<br>&nbsp;
+<br>Iteration number #1 ***************************
+<br>&nbsp;
+<br>***************************************
+<br>Increasing the geometric refinement.. 
+<br>Refinement completed
+<br>Mesh refinement (-m): 0.0377045
+<br>***************************************
+<br>Computing the links.. 
+<br>Number of panels after refinement: 96
+<br>Number of links to be computed: 4628
+<br>Done computing links
+<br>***************************************
+<br>Precond Type(s) (-p): Jacobi 
+<br>GMRES Iteration: 0 1 2 
+<br>GMRES Iteration: 0 1 2 
+<br>Capacitance matrix is:
+<br>Dimension 2 x 2
+<br>g1_mycube  8.02789e-011 -2.59788e-011 
+<br>g2_mycube  -2.59743e-011 8.02738e-011 
+<br>&nbsp;
+<br>Weighted Frobenius norm of the difference between capacitance (auto option): 0.199681
+<br>&nbsp;
+<br>Solve statistics:
+<br>Number of input panels: 12 of which 12 conductors and 0 dielectric
+<br>Number of input panels to solver engine: 24
+<br>Number of panels after refinement: 96
+<br>Number of potential estimates: 2314
+<br>Number of links: 4724 (uncompressed 9216, compression ratio is 48.7%)
+<br>Max recursion level: 13
+<br>Max Mesh relative refinement value: 0.0373801
+<br>Iteration time: 0.035000s (0 days, 0 hours, 0 mins, 0 s)
+<br>Iteration allocated memory: 12360 kilobytes
+<br>&nbsp;
+<br>Iteration number #2 ***************************
+<br>&nbsp;
+<br>***************************************
+<br>Increasing the geometric refinement.. 
+<br>Refinement completed
+<br>Mesh refinement (-m): 0.0264317
+<br>***************************************
+<br>Computing the links.. 
+<br>Number of panels after refinement: 192
+<br>Number of links to be computed: 11048
+<br>Done computing links
+<br>***************************************
+<br>Precond Type(s) (-p): Jacobi 
+<br>GMRES Iteration: 0 1 2 3 
+<br>GMRES Iteration: 0 1 2 3 
+<br>Capacitance matrix is:
+<br>Dimension 2 x 2
+<br>g1_mycube  8.1187e-011 -2.64358e-011 
+<br>g2_mycube  -2.64368e-011 8.11959e-011 
+<br>&nbsp;
+<br>Weighted Frobenius norm of the difference between capacitance (auto option): 0.011994
+<br>&nbsp;
+<br>Solve statistics:
+<br>Number of input panels: 12 of which 12 conductors and 0 dielectric
+<br>Number of input panels to solver engine: 24
+<br>Number of panels after refinement: 192
+<br>Number of potential estimates: 5524
+<br>Number of links: 11240 (uncompressed 36864, compression ratio is 69.5%)
+<br>Max recursion level: 14
+<br>Max Mesh relative refinement value: 0.0264134
+<br>Iteration time: 0.057000s (0 days, 0 hours, 0 mins, 0 s)
+<br>Iteration allocated memory: 12402 kilobytes
+<br>&nbsp;
+<br>Iteration number #3 ***************************
+<br>&nbsp;
+<br>***************************************
+<br>Increasing the geometric refinement.. 
+<br>Refinement completed
+<br>Mesh refinement (-m): 0.0186771
+<br>***************************************
+<br>Computing the links.. 
+<br>Number of panels after refinement: 288
+<br>Number of links to be computed: 21936
+<br>Done computing links
+<br>***************************************
+<br>Precond Type(s) (-p): Jacobi 
+<br>GMRES Iteration: 0 1 2 3 
+<br>GMRES Iteration: 0 1 2 3 
+<br>Capacitance matrix is:
+<br>Dimension 2 x 2
+<br>g1_mycube  8.1964e-011 -2.6891e-011 
+<br>g2_mycube  -2.68863e-011 8.19668e-011 
+<br>&nbsp;
+<br>Weighted Frobenius norm of the difference between capacitance (auto option): 0.0103921
+<br>&nbsp;
+<br>Solve statistics:
+<br>Number of input panels: 12 of which 12 conductors and 0 dielectric
+<br>Number of input panels to solver engine: 24
+<br>Number of panels after refinement: 288
+<br>Number of potential estimates: 10968
+<br>Number of links: 22224 (uncompressed 82944, compression ratio is 73.2%)
+<br>Max recursion level: 16
+<br>Max Mesh relative refinement value: 0.0186339
+<br>Iteration time: 0.058000s (0 days, 0 hours, 0 mins, 0 s)
+<br>Iteration allocated memory: 12444 kilobytes
+<br>&nbsp;
+<br>Iteration number #4 ***************************
+<br>&nbsp;
+<br>***************************************
+<br>Increasing the geometric refinement.. 
+<br>Refinement completed
+<br>Mesh refinement (-m): 0.0131762
+<br>***************************************
+<br>Computing the links.. 
+<br>Number of panels after refinement: 480
+<br>Number of links to be computed: 45824
+<br>Done computing links
+<br>***************************************
+<br>Precond Type(s) (-p): Jacobi 
+<br>GMRES Iteration: 0 1 2 3 4 
+<br>GMRES Iteration: 0 1 2 3 4 
+<br>Capacitance matrix is:
+<br>Dimension 2 x 2
+<br>g1_mycube  8.26757e-011 -2.73819e-011 
+<br>g2_mycube  -2.73807e-011 8.26804e-011 
+<br>&nbsp;
+<br>Weighted Frobenius norm of the difference between capacitance (auto option): 0.00994789
+<br>&nbsp;
+<br>Solve statistics:
+<br>Number of input panels: 12 of which 12 conductors and 0 dielectric
+<br>Number of input panels to solver engine: 24
+<br>Number of panels after refinement: 480
+<br>Number of potential estimates: 22912
+<br>Number of links: 46304 (uncompressed 230400, compression ratio is 79.9%)
+<br>Max recursion level: 18
+<br>Max Mesh relative refinement value: 0.0131762
+<br>Iteration time: 0.092000s (0 days, 0 hours, 0 mins, 0 s)
+<br>Iteration allocated memory: 12530 kilobytes
+<br>&nbsp;
+<br>Total allocated memory: 12530 kilobytes
+<br>Total time: 0.311000s (0 days, 0 hours, 0 mins, 0 s)
+</code>
+
+</body>
+</html>

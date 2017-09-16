@@ -1,0 +1,177 @@
+<!doctype html public "-//w3c//dtd html 4.0 frameset//en">
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="Enrico Di Lorenzo">
+  <meta name="Generator" content="Enrico Di Lorenzo">
+  <meta name="Description" content="Help File">
+  <meta name="Version" content="050510">
+  <title>FasterCap Output</title>
+  <link href="../helpstyle.css" rel="stylesheet" type="text/css">
+</head>
+
+<BODY>
+
+<H1>FasterCap Output</H1>
+
+<H2>Output Iteration information</H2>
+
+<p>The iteration section provides the information related to the current solve iteration, in case of Automatic settings. In case of Manual settings, there will be only one section, for a single iteration corresponding to the chosen settings.
+<br>&nbsp;
+
+<code>
+<br>Iteration number #4 ***************************
+<br>&nbsp;
+<br>***************************************
+<br>Increasing the geometric refinement.. 
+<br>Refinement completed
+<br>Mesh refinement (-m): 0.0131762
+<br>***************************************
+<br>Computing the links.. 
+<br>Number of panels after refinement: 480
+<br>Number of links to be computed: 45824
+<br>Done computing links
+<br>***************************************
+<br>Precond Type(s) (-p): Jacobi 
+<br>GMRES Iteration: 0 1 2 3 4 
+<br>GMRES Iteration: 0 1 2 3 4 
+<br>Capacitance matrix is:
+<br>Dimension 2 x 2
+<br>g1_mycube  8.26757e-011 -2.73819e-011 
+<br>g2_mycube  -2.73807e-011 8.26804e-011 
+<br>&nbsp;
+<br>Weighted Frobenius norm of the difference between capacitance (auto option): 0.00994789
+<br>&nbsp;
+<br>Solve statistics:
+<br>Number of input panels: 12 of which 12 conductors and 0 dielectric
+<br>Number of input panels to solver engine: 24
+<br>Number of panels after refinement: 480
+<br>Number of potential estimates: 22912
+<br>Number of links: 46304 (uncompressed 230400, compression ratio is 79.9%)
+<br>Max recursion level: 18
+<br>Max Mesh relative refinement value: 0.0131762
+<br>Iteration time: 0.092000s (0 days, 0 hours, 0 mins, 0 s)
+<br>Iteration allocated memory: 12530 kilobytes
+</code>
+
+<p>In the following, each subsection of the iteration section will be examined
+
+<h3>Prologue subsection</h3>
+
+<code>
+<br>Iteration number #4 ***************************
+<br>&nbsp;
+<br>***************************************
+<br>Increasing the geometric refinement.. 
+<br>Refinement completed
+<br>Mesh refinement (-m): 0.0131762
+<br>***************************************
+<br>Computing the links.. 
+<br>Number of panels after refinement: 480
+<br>Number of links to be computed: 45824
+<br>Done computing links
+<br>***************************************
+<br>Precond Type(s) (-p): Jacobi 
+</code>
+
+<p>The prologue contains:
+
+<ul>
+  <li>The Mesh refinement value as automatically calculated by FasterCap
+  <li>The total number of panels and links after refinement
+  <li>The selected preconditioner type
+</ul>
+
+<h3>Solve subsection</h3>
+
+<code>
+<br>GMRES Iteration: 0 1 2 3 4 
+<br>GMRES Iteration: 0 1 2 3 4 
+</code>
+
+<p>The solve subsection shows the status of the current calculation. The iterations will go on until convergence of the iterative linear system solution is achieved, within the required relative accuracy as set with the -t parameter (see 'Gmres tolerance' in the above Prologue subsecton and the <a href="../Run/Run_ch01.htm">Run Menu dialog box</a> paragraph). 
+
+<p>There will be one row of iterations for each separate conductor described in the input file.
+
+<p>If the -r global option is selected (see the <a href="../Run/Run_ch01.htm">Run Menu dialog box</a> paragraph), also the residual at each iteration will be provided, as in the example below:
+
+<br>&nbsp;
+
+<code>
+<br>GMRES Iteration: 250 0 3.33 1 0.2 2 0.0145 3 0.00653 4 0.002 
+<br>GMRES Iteration: 250 0 3.33 1 0.2 2 0.0146 3 0.00656 4 0.002 
+</code>
+
+<h3>Result subsection</h3>
+
+<code>
+<br>Capacitance matrix is:
+<br>Dimension 2 x 2
+<br>g1_mycube  8.26757e-011 -2.73819e-011 
+<br>g2_mycube  -2.73807e-011 8.26804e-011 
+</code>
+
+<p>The result subsection contains the actual matrix capacitance resulting from the current iteration.
+<p>Besides the information about the matrix dimension, each row of the capacitance matrix will report the information about the conductor name. The conductors referred in the columns follow the same order of the rows (the matrix is, anyway, symmetric).
+<p>The format of the output matrix is that of a Maxwell capacitance matrix. 
+
+<ul>
+
+  <li>3D case
+  
+<p>This means that with respect to the follwing figure, showing the actual self and mutual capacitances between the two cubes considered in the example:
+
+<p><img src="../images/cubes_capacitances.png">
+
+<p>the resulting matrix has the form:
+
+<p><img src="../images/maxwell_capacitance_matrix.png">
+
+<p>It follows that:
+
+<p>C11 = 8.268e-011 -2.738e-011 = 5.530e-011 = 55.30 pF
+<br>C12 = C21 = -( -2.738e-011 ) = 2.738e-011 = 27.38 pF
+
+  <li>2D case
+  
+  <p>In the 2D case, the potential at infinity is not zero (the potential decreases as log(1/r), where 'r' is the distance from the source). Therefore, the potential is always referenced to one of the conductors, which is assumed to have zero potential (ground conductor). This last conductor is therefore not explicitly included in the Maxwell capacitance matrix row / columns.
+  <p>Remember also that the unit of measurement of the capacitance matrix in this case is F/m.
+  <br>
+  
+</ul>
+
+<h3>Statistics subsection</h3>
+
+<code>
+<br>Weighted Frobenius norm of the difference between capacitance (auto option): 0.00994789
+<br>&nbsp;
+<br>Solve statistics:
+<br>Number of input panels: 12 of which 12 conductors and 0 dielectric
+<br>Number of input panels to solver engine: 24
+<br>Number of panels after refinement: 480
+<br>Number of potential estimates: 22912
+<br>Number of links: 46304 (uncompressed 230400, compression ratio is 79.9%)
+<br>Max recursion level: 18
+<br>Max Mesh relative refinement value: 0.0131762
+<br>Iteration time: 0.092000s (0 days, 0 hours, 0 mins, 0 s)
+<br>Iteration allocated memory: 12530 kilobytes
+</code>
+
+<p>The statistics subsection contains information about data used in the current iteration. In particular:
+
+<ul>
+  <li>The weighted Frobenius norm. The weighted Frobenius norm is used to measure the difference of the capacitance matrix resulting from the current iteration with respect to the capacitance matrix resulting from the previous iteration. This is the standard way to calculate the relative difference between two matrices. For instance, a value of 0.00994789 means a difference of 0.99% between the current result and the result in the previous iteration.
+  <li>The total number of input panels, as found in the input files structure
+  <li>The total number of input panels to the solver engine. This can be different from the total number of input panels, when a pre-processing of the input geometry is needed. The most common case is to transform the quadrilateral panels into two triangular panels, since the internal engine only deals with triangular elements. Other pre-processings deal with degenerate panels removal or thin panels regularization.
+  <li>The total number of panels, after mesh refinement. These are the actual panels over which the solution is calculated.
+  <li>The total number of potential estimates. This is the number of potential calculations used to build up the potential matrix, whose inversion will provide the capacitance matrix.  
+  <li>The total number of links. This is the number of compressed matrix elements in the potential matrix. Calling 'N' the total number of panels (after mesh refinement), a full matrix would have a dimentsion equal to N x N. Thanks to compression, the actual matrix dimension is much smaller. The compression ratio is shown for reference between parenthesis.
+    <li>The maximum recursion level. This is the maximum recursion level reached in the meshing process when building the binary tree of panels.
+    <li>The maximum Mesh relative refinement value found during discretization (could be lower than the Mesh relative refinement value set by the User, in case the input geometry is already fine enough to be below the threshold set by the user. In this case, to force a further discretization, you need to specify a value smaller than the maximum Mesh relative refinement value found during discretization)
+    <li>The time elapsed and the memory allocated for this iteration.
+</ul>
+
+
+</body>
+</html>

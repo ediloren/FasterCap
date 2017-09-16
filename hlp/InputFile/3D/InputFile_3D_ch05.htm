@@ -1,0 +1,58 @@
+<!doctype html public "-//w3c//dtd html 4.0 frameset//en">
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="Enrico Di Lorenzo">
+  <meta name="Generator" content="Enrico Di Lorenzo">
+  <meta name="Description" content="Help File">
+  <meta name="Version" content="050510">
+  <title>FasterCap Input Files</title>
+  <link href="../../helpstyle.css" rel="stylesheet" type="text/css">
+</head>
+
+<BODY>
+
+<H1>FasterCap 3D Input Files</H1>
+
+<H2>Quadrilateral panel definitions ('Q' statement)</H2>
+
+<p><code>Syntax: Q &lt;condname&gt; &lt;x1&gt; &lt;y1&gt; &lt;z1&gt; &nbsp; &lt;x2&gt; &lt;y2&gt; &lt;z2&gt; &nbsp; &lt;x3&gt; &lt;y3&gt; &lt;z3&gt; &nbsp; &lt;x4&gt; &lt;y4&gt; &lt;z4&gt; &nbsp; [&lt;xref&gt; &lt;yref&gt; &lt;zref&gt;]</code>
+
+
+<p>The 'Q' element at the beginning of a line defines a quadrilateral panel. If the quadrilateral panel belongs to a conductor surface, the <code>&lt;condname&gt;</code> parameter is used to associate the panel to a parent conductor named <code>&lt;condname&gt;</code>. If the quadrilateral panel belongs to a dielectric surface, the <code>&lt;condname&gt;</code> parameter is ignored.
+The <i>(x1, y1, z1)</i>, <i>(x2, y2, z2)</i>, <i>(x3, y3, z3)</i>, <i>(x4, y4, z4)</i> 3D points specify the coordinates of the four corners of the panel; the coordinates must be entered in clockwise or counterclockwise order starting from any one corner.
+<br>In case the panel is part of a dielectric interface, you can use the optional coordinates <i>(xref, yref, zref)</i> to specify a reference point; see <a href="InputFile_3D_ch04.htm">3D Dielectric definitions ('D' statement)</a> for more details about dielectric interfaces.
+
+<p>Example 1:
+
+<br>&nbsp;
+<code>
+<br>Q mycube &nbsp;1.0 1.0 0.0 &nbsp;1.0 0.0 0.0 &nbsp;1.0 0.0 1.0 &nbsp;1.0 1.0 1.0
+</code>
+
+<p>This input file fragments specifies a face of the surface of a conducting cube, whose name is <code>mycube</code>.
+
+<p>Example 2:
+
+<br>&nbsp;
+<code>
+<br>Q onecube &nbsp;1.0 1.0 0.0 &nbsp;1.0 0.0 0.0 &nbsp;1.0 0.0 1.0 &nbsp;1.0 1.0 1.0
+<br>Q othercube &nbsp;0.0 1.0 0.0 &nbsp;1.0 1.0 0.0 &nbsp;1.0 1.0 1.0 &nbsp;0.0 1.0 1.0
+<br>Q onecube &nbsp;1.0 0.0 0.0 &nbsp;0.0 0.0 0.0 &nbsp;0.0 0.0 1.0 &nbsp;1.0 0.0 1.0
+
+</code>
+
+<p>This input file fragments specifies two face of the surface of a conducting cube, whose name is <code>onecube</code>, and one face of the surface of a second conducting cube, whose name is <code>othercube</code>.
+
+<p>Example 3:
+
+<br>&nbsp;
+<code>
+<br>Q mycube &nbsp;1.0 1.0 0.0 &nbsp;1.0 0.0 0.0 &nbsp;1.0 0.0 1.0 &nbsp;1.0 1.0 1.0 &nbsp;0.0 0.0 2.0
+</code>
+
+<p>This input file fragments specifies a face of the surface of a dielectric cube, whose name is <code>mycube</code>, with a panel-specific dielectric reference point at (0,0,2).
+
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!doctype html public "-//w3c//dtd html 4.0 frameset//en">
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="Enrico Di Lorenzo">
+  <meta name="Generator" content="Enrico Di Lorenzo">
+  <meta name="Description" content="Help File">
+  <title>GetReturnStatus Method Reference</title>
+  <link href="helpstyle.css" rel="stylesheet" type="text/css">
+</head>
+
+<BODY>
+
+<H1>FasterCapObject.GetReturnStatus</H1>
+
+<div class="evident"><b>short </b>FasterCapObject<b>.GetReturnStatus()</b></div>
+
+<H2>Return Value</H2>
+<p>The method returns the return status of FasterCap.
+
+<p>Valid status values are:
+
+<p><code>
+FC_NORMAL_END&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0 <br>
+FC_GENERIC_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 <br>
+FC_FC_COMMAND_LINE_ERROR&nbsp; 64 <br>
+FC_CANNOT_OPEN_FILE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 66 <br>
+FC_OUT_OF_MEMORY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 71 <br>
+FC_FILE_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 74 <br>
+FC_CANNOT_GO_OOC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 97 <br>
+FC_EXCEPTION_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 98 <br>
+FC_USER_BREAK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 125 <br>
+</code>
+
+<p>The meaning is:
+<p><code>FC_NORMAL_END</code>: no error, normal end
+<code>FC_GENERIC_ERROR</code>: catchall for generic error
+<code>FC_COMMAND_LINE_ERROR</code>: command line usage error
+<code>FC_CANNOT_OPEN_FILE</code>: cannot open input file(s)
+<code>FC_OUT_OF_MEMORY</code>: out of memory
+<code>FC_FILE_ERROR</code>: generic file error
+<code>FC_CANNOT_GO_OOC</code>: cannot go out-of-core (probably disk full)
+<code>FC_EXCEPTION_ERROR</code>: unknown exception caught
+<code>FC_USER_BREAK</code>: user-requested break
+
+<H2>Parameters</H2>
+<p> None
+
+<H2>Remarks</H2>
+<p> Returns the reason why FasterCap stopped execution. The reason could be normal end, user break or errors.
+
+<H2>See Also</H2>
+<p><a href="FasterCapAutomationOverview.htm"> FasterCap Automation Overview</a> 
+
+</body>
+</html>

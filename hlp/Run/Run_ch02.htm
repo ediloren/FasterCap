@@ -1,0 +1,101 @@
+<!doctype html public "-//w3c//dtd html 4.0 frameset//en">
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="Enrico Di Lorenzo">
+  <meta name="Generator" content="Enrico Di Lorenzo">
+  <meta name="Description" content="Help File">
+  <meta name="Version" content="050510">
+  <title>Running FasterCap</title>
+  <link href="../helpstyle.css" rel="stylesheet" type="text/css">
+</head>
+
+<BODY>
+
+<H1>Running FasterCap</H1>
+
+<H2>Launching FasterCap from the shell</H2>
+
+FasterCap can be launched in GUI-less mode from a System shell (e.g. a DOS shell under MS Windows, a KSH under Linux, etc.).
+
+<p>To enter the GUI-less text mode, you need to pass the additional command option '-b' ('batch' mode) when launching FasterCap from the System shell.
+<p>For example:
+<br>&nbsp;
+<code>
+<br>FasterCap -b cube.txt -a0.01
+</code>
+<p>&nbsp;
+<br>Please note that the command options can be passed in arbitrary order. Please note also that the default option for the GUI-less mode is not Automatic, as it is instead in the GUI mode; so you need to specify the -a option with the relevant tolerance to trigger the Automatic solution mode.
+<p>For a list of valid running command options, please see the explaination in the <a href="../Run/Run_ch01.htm">Run Menu dialog box</a> paragraph. The command options are indicated together with the relevant settings descriptions. Example: <b>'Stop when relative error is lower than (-a)'</b> indicates that the relevant parameter to control this setting when launched from a System shell is '-a'
+<p>You can also get a list of the valid command options with a short description when launching FasterCap from a System shell with the '-?' parameter (or with any invalid unsupported parameter).
+<p>For example:
+<br>&nbsp;
+<code>
+<br>FasterCap -b -?
+
+<p>Usage: fastercap &lt;input file> [-a&lt;relative error&gt;] [-ap]
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[-m&lt;mesh&gt;] [-mc&lt;mesh curvature] [-t&lt;tolerance&gt;]
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[-d&lt;interaction coeff&gt;] [-f&lt;outofcore&gt;] [-g]
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[-pj] [-ps&lt;dimension&gt;] [-o] [-r] [-c] [-i] [-v]
+<br>DEFAULT VALUES:
+<br>&nbsp;&nbsp;-a:  Automatically calculate settings, stop when relative error is lower than
+= 0.01
+<br>&nbsp;&nbsp;-ap: Automatic preconditioner usage
+<br>&nbsp;&nbsp;-m:  Mesh relative refinement value = 0.1
+<br>&nbsp;&nbsp;-mc: Mesh curvature coefficient = 3
+<br>&nbsp;&nbsp;-t:  GMRES iteration tolerance = 0.01
+<br>&nbsp;&nbsp;-d:  Direct potential interaction coefficient to mesh refinement ratio = 1
+<br>&nbsp;&nbsp;-f:  Out-Of-Core free memory to link memory condition = 5
+<br>&nbsp;&nbsp;-g:  Use Galerkin scheme
+<br>&nbsp;&nbsp;-pj: Use Jacobi Preconditioner
+<br>&nbsp;&nbsp;-ps: Use two-levels preconditioner with dimension = 5
+<br>OPTIONS:
+<br>&nbsp;&nbsp;-o:  Output refined geometry in FastCap2 format
+<br>&nbsp;&nbsp;-r:  Dump Gmres residual at each iteration
+<br>&nbsp;&nbsp;-c:  Dump charge densities in output file
+<br>&nbsp;&nbsp;-i:  Dump detailed time and memory information
+<br>&nbsp;&nbsp;-v: Verbose output
+<br>&nbsp;&nbsp;-b: Launch as console/shell application without GUI
+<br>&nbsp;&nbsp;-b?: Print console usage (this text)
+<br>&nbsp;&nbsp;-bv: Print only the version
+<br>&nbsp;&nbsp;-h:  Open only the help system (Linux only)
+
+</code>
+
+<p>The list of valid return (exit) codes is:
+
+<p><code>
+<br>// no error, normal end
+<br>#define FC_NORMAL_END          0
+<br>// catchall for generic error
+<br>#define FC_GENERIC_ERROR       1
+<br>// command line usage error
+<br>#define FC_COMMAND_LINE_ERROR  64
+<br>// cannot open input file(s)
+<br>#define FC_CANNOT_OPEN_FILE    66
+<br>// out of memory
+<br>#define FC_OUT_OF_MEMORY       71
+<br>// generic file error
+<br>#define FC_FILE_ERROR          74
+<br>// license error (e.g. invalid license)
+<br>#define FC_LICENSE_ERROR        77
+<br>// cannot go out-of-core (probably disk full)
+<br>#define FC_CANNOT_GO_OOC       97
+<br>// unknown exception caught
+<br>#define FC_EXCEPTION_ERROR     98
+<br>// user-requested break (not valid for console mode)
+<br>#define FC_USER_BREAK          125
+</code>
+
+<p>The return codes can be checked under Linux with the following command:
+<br><code>
+echo $?
+</code>
+<br>and under MS Windows with the command:
+<br><code>
+echo %ERRORLEVEL%
+</code>
+
+</body>
+</html>

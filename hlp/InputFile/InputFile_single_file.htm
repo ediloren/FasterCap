@@ -1,0 +1,48 @@
+<!doctype html public "-//w3c//dtd html 4.0 frameset//en">
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="Enrico Di Lorenzo">
+  <meta name="Generator" content="Enrico Di Lorenzo">
+  <meta name="Description" content="Help File">
+  <meta name="Version" content="050510">
+  <title>FasterCap Input Files</title>
+  <link href="../helpstyle.css" rel="stylesheet" type="text/css">
+</head>
+
+<BODY>
+
+<H1>FasterCap Input Files</H1>
+
+<H2>Single Input File option</H2>
+
+FasterCap supports also the option to specify all input data in a single file. This avoids the need for a possibly large number of different input files.
+<p>The format is as follows:
+
+<p><code>(main input file)
+<br>End
+<br>File &lt;first_sub-file&gt;
+<br>(contents of &lt;first_sub-file&gt;)
+<br>End
+<br>File &lt;second_sub-file&gt;
+<br>(contents of &lt;second_sub-file&gt;)
+<br>End
+</code>
+
+<p>In this way, all references to external files can be replaced by internal references; for instance, if you write
+
+<br><code>C first_sub-file  1.0  0.0 0.0 0.0
+</code>
+
+<br>FasterCap will not try to access the file 'first_sub-file' from the file system, but will take the data from the 'File' section as per the above definition.
+
+<p>FasterCap allows hierarchical definitions, i.e. 'first_sub-file' can contain references to 'second_sub-file'. If the referenced files are not found internally, FasterCap assumes that they reside on the file system, and will look for them accordingly.
+
+<p>The characters following 'E' in 'End' and following 'F' in 'File' are optional. Like the other statements, 'E' and 'F' are case-insensitive, and must be the first character of the line in which they are defined.
+<br>Moreover, the 'End' statement in itself is optional, and is included only for input file readibility.
+
+<p>You can find some examples of single input files in the 'Samples' directory, for both 3D and 2D models. 
+ 
+</body>
+</html>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<wxsmith>
+	<object class="wxDialog" name="LicenseBox">
+		<id_arg>0</id_arg>
+		<object class="wxBoxSizer" variable="BoxSizer1" member="no">
+			<object class="sizeritem">
+				<object class="wxPanel" name="ID_PANEL1" variable="Panel1" member="yes">
+					<object class="wxFlexGridSizer" variable="FlexGridSizer1" member="no">
+						<cols>1</cols>
+						<rows>3</rows>
+						<object class="sizeritem">
+							<object class="wxBoxSizer" variable="BoxSizer2" member="no">
+								<orient>wxVERTICAL</orient>
+								<object class="sizeritem">
+									<object class="wxStaticText" name="ID_STATICTEXT_HEADER1" variable="StaticText_Header1" member="yes">
+										<label>FasterCap Demo License</label>
+									</object>
+									<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+									<border>5</border>
+									<option>1</option>
+								</object>
+								<object class="sizeritem">
+									<object class="wxStaticText" name="ID_STATICTEXT_HEADER2" variable="StaticText_Header2" member="yes">
+										<label>Please contact FastFieldSolvers S.r.l. if you wish to purchase a commercial license</label>
+									</object>
+									<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+									<border>5</border>
+									<option>1</option>
+								</object>
+								<object class="sizeritem">
+									<object class="wxStaticText" name="ID_STATICTEXT_HEADER3" variable="StaticText_Header3" member="yes">
+										<label>http://www.fastfieldsolvers.com</label>
+									</object>
+									<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+									<border>5</border>
+									<option>1</option>
+								</object>
+							</object>
+							<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+							<border>5</border>
+							<option>1</option>
+						</object>
+						<object class="sizeritem">
+							<object class="wxTextCtrl" name="ID_TEXTCTRL_LICENSE" variable="TextCtrl_License" member="yes">
+								<value>License</value>
+								<size>400,300</size>
+								<style>wxTE_AUTO_SCROLL|wxTE_MULTILINE|wxTE_WORDWRAP</style>
+							</object>
+							<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+							<border>5</border>
+							<option>1</option>
+						</object>
+						<object class="sizeritem">
+							<object class="wxStdDialogButtonSizer" variable="StdDialogButtonSizer1" member="no">
+								<object class="button">
+									<object class="wxButton" name="wxID_OK">
+										<label>I accept</label>
+									</object>
+								</object>
+							</object>
+							<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+							<border>5</border>
+							<option>1</option>
+						</object>
+					</object>
+				</object>
+				<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+				<border>5</border>
+				<option>1</option>
+			</object>
+		</object>
+	</object>
+</wxsmith>

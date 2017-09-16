@@ -1,0 +1,94 @@
+FasterCap History
+==================
+Copyright (c) 2017
+FastFieldSolvers S.R.L.  http://www.fastfieldsolvers.com
+==================
+
+Version 6.0.0, 2017/08/24
+- LGPL version
+
+Version 5.5.2, 2015/01/19
+- Allowed running in pure console mode on Linux
+  without the need of any DISPLAY
+
+Version 5.5.1, 2014/09/08
+- Improved Floating License mechanism
+- 64 bit version ported to MinGW-w64
+
+Version 5.5.0, 2014/06/30
+- Multi-processor version
+
+Version 5.0.7, 2014/03/31
+- Update to wxWidgets 3.0
+
+Version 5.0.6, 2013/12/12
+- Improved timing in connection to floating License Server,
+  to avoid loosing connection in high load conditions
+
+Version 5.0.5, 2013/11/28
+- Fixing corner case issue in numerical potential evaluation
+
+Version 5.0.4, 2013/08/09
+- Enhanced flexibility on licensing
+
+Version 5.0.3, 2013/06/14
+- Added support for Win 64bits
+
+Version 5.0.2, 2013/03/12
+- Added 2D capacitance solver two-levels pre-conditioner support.
+- Added the Single Input File capability
+- Updated and changed exit status codes for both Automation
+  and Console modes
+- Added console mode options:
+  o print only the version
+  o open only the help
+  o print usage
+
+Version 5.0.1, 2013/03/11
+- Added 2D capacitance solver complex permittivity support.
+
+Version 5.0.0, 2013/01/11
+- Adding 2D capacitance solver capabilities.
+- Fixed a bug when dumping charge densities, in case there were conductors
+  in contact with different dielectrics.
+
+Version 4.0.5, 2013/01/07
+- Minor stabilization fixes
+
+Version 4.0.0, 2012/12/21
+- Main Linux porting version
+- Improved two-levels pre-conditioner, both in terms of conditioning (less iterations needed
+  to reach solution convergence) and of capability to build the preconditioner where
+  the previous version failed and reverted to Jacobi preconditioner.
+  In particular, the improved pre-conditioner is able to address ill-conditioned geometries
+  with extreme geometrical ratios
+
+Version 3.5.0, 2012/12/04
+- Added command line option '-b' allowing launching FasterCap as a console application
+
+Version 3.1.1, 2012/12/03
+- Fixed issue when the maximum number of GMRES iterations is reached
+
+Version 3.1.0, 2012/11/19
+- Fixed issue with the division of stretched (long and thin) quadrilateral panels,
+  causing in some cases many very small triangles to appear in the refinement
+- Changed the warning message for thin panels, so the user is notified,
+  also in non-verbose mode, if the thin panels are in the input file or
+  created during the triangularization
+- Added check for dummy dielectric surfaces (having the same dielectric constant
+  on both sides). In this case FasterCap issues warning and skips the surface
+- Fixed issue in setting the verbose mode, that caused verbose information to appear
+  only in the next run and not in the current
+
+Version 3.0.3, 2012/05/24
+- Support for complex permittivity to allow handling of lossy dielectric mediums
+
+Version 2.0, 2011/11/25
+- Out-of-core capability
+- Charge densities dump in FastModel compatibile format
+
+Version 1.2, 2010/12/18
+- Enhanced version supporting Automation
+
+Version 1.0, 2010/07/22
+- Creation

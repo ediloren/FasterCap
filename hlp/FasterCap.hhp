@@ -1,0 +1,15 @@
+[OPTIONS]
+Compatibility=1.1 or later
+Compiled file=../FasterCapHelp.chm
+Contents file=FasterCap.hhc
+Default Window=mainwin
+Display compile progress=Yes
+Language=0x409 Inglese (Stati Uniti)
+Title=FasterCap Help
+
+[WINDOWS]
+mainwin="FasterCap Help","FasterCap.hhc",,"WelcometoFasterCap.htm","WelcometoFasterCap.htm",,,,,0x2020,,0x3806,[0,0,640,450],0x30000,,,,,,0
+
+
+[INFOTYPES]
+

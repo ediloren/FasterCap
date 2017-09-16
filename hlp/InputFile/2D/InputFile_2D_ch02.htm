@@ -1,0 +1,103 @@
+<!doctype html public "-//w3c//dtd html 4.0 frameset//en">
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="Enrico Di Lorenzo">
+  <meta name="Generator" content="Enrico Di Lorenzo">
+  <meta name="Description" content="Help File">
+  <meta name="Version" content="050510">
+  <title>FasterCap Input Files</title>
+  <link href="../../helpstyle.css" rel="stylesheet" type="text/css">
+</head>
+
+<BODY>
+
+<H1>FasterCap 2D Input Files</H1>
+
+<H2>Input File Structure</H2>
+
+<p>The input file is a sequential list of materials definitions (conductor 'C' statements and dielectric 'D' statements) and of geometric segment descriptions (straight segment 'S' statements).
+<br>Moreover, comments are allowed ('*' elements) as well as naming definitions ('N' elements)
+
+<p>Definitions can be nested in a hierarchical fashion to be able to re-use the geometric descriptions and to ease the construction of the models.
+<br>Segment geometric definitions ('S' elements) in the root file are assumed by default to belong to conductors embedded in a dielectric medium with unit permittivity.
+
+<p>All input files begins with a comment line. For compatibility and to ease possible file merging, you are recommended to start the line with a '*' character; anyway this is not mandatory, and the first line of any input file is always interpreted as a comment.
+<p>A 2D input file <b>MUST</b> contain in the first line of the root file the string "2D" or "2d". This string is used by FasterCap to switch to 2D solver mode. By default, FasterCap assumes to be in 3D solver mode, so 2D file definitions without the "2D" string will cause input parser errors.
+
+<p><b>Remark:</b> since FasterCap is able to automatically refine the geometry, it is best working with <b>an input mesh as coarse as possible</b>.
+
+<p>An input file example is shown here below.
+
+<p>File <i>coax_cable_coated_2d_fine.lst</i>:
+<br>&nbsp;
+<code>
+<br>* 2D - Coated coaxial cable, a=1 internal radius, b=1.5 diel interface, c=2 external radius
+<br>* Analytic capacitance capacitance is C1*C2/(C1+C2) where
+<br>* C1 = 2*pi*e0*er1/ln(b/a) = 274.4 pF/m, C2 = 2*pi*e0*er2/ln(c/b) = 193.4 pf/m
+<br>* It follows C = 113.4 pF/m
+<br>* Note that in this input file the discretization is finer (40 sections per circle)
+<br>* so actual capacitance is closer to the theorical one
+<br>&nbsp;
+<br>C circle_0.1_fine.txt 2.0&nbsp;&nbsp;0.0 0.0
+<br>D circle_0.15_fine.txt 2.0 1.0&nbsp;&nbsp;0.0 0.0&nbsp;&nbsp;0.0 0.0
+<br>C circle_0.2_fine.txt 1.0&nbsp;&nbsp;0.0 0.0
+</code>
+
+<p>The above input file references hierarchically the files <i>circle_0.1_fine.txt</i>, <i>circle_0.15_fine.txt</i>, and <i>circle_0.2_fine.txt</i>. These files contains a geometric description of a circular conductor with different diameters, as shown here below for the file <i>circle_0.1_fine.txt</i>.
+
+<p>File <i>circle_0.1_fine.txt</i>:
+<br>&nbsp;
+<code>
+<br>0 circle with diameter 0.1. centered at the origin
+<br>*
+<br>S circle 0.1 0  0.098768907 0.015642989
+<br>S circle 0.098768907 0.015642989  0.095105938 0.030900818
+<br>S circle 0.095105938 0.030900818  0.089101283 0.045397812
+<br>S circle 0.089101283 0.045397812  0.080902789 0.058777026
+<br>S circle 0.080902789 0.058777026  0.070712316 0.07070904
+<br>S circle 0.070712316 0.07070904  0.058780774 0.080900066
+<br>S circle 0.058780774 0.080900066  0.045401939 0.08909918
+<br>S circle 0.045401939 0.08909918  0.030905224 0.095104506
+<br>S circle 0.030905224 0.095104506  0.015647565 0.098768182
+<br>S circle 0.015647565 0.098768182  4.63268E-06 0.1
+<br>S circle 4.63268E-06 0.1  -0.015638413 0.098769631
+<br>S circle -0.015638413 0.098769631  -0.030896412 0.095107369
+<br>S circle -0.030896412 0.095107369  -0.045393684 0.089103386
+<br>S circle -0.045393684 0.089103386  -0.058773278 0.080905511
+<br>S circle -0.058773278 0.080905511  -0.070705764 0.070715592
+<br>S circle -0.070705764 0.070715592  -0.080897342 0.058784522
+<br>S circle -0.080897342 0.058784522  -0.089097077 0.045406067
+<br>S circle -0.089097077 0.045406067  -0.095103074 0.03090963
+<br>S circle -0.095103074 0.03090963  -0.098767457 0.01565214
+<br>S circle -0.098767457 0.01565214  -0.1 9.26536E-06
+<br>S circle -0.1 9.26536E-06  -0.098770355 -0.015633838
+<br>S circle -0.098770355 -0.015633838  -0.095108801 -0.030892006
+<br>S circle -0.095108801 -0.030892006  -0.089105489 -0.045389556
+<br>S circle -0.089105489 -0.045389556  -0.080908234 -0.05876953
+<br>S circle -0.080908234 -0.05876953  -0.070718867 -0.070702488
+<br>S circle -0.070718867 -0.070702488  -0.058788269 -0.080894619
+<br>S circle -0.058788269 -0.080894619  -0.045410195 -0.089094973
+<br>S circle -0.045410195 -0.089094973  -0.030914036 -0.095101642
+<br>S circle -0.030914036 -0.095101642  -0.015656716 -0.098766732
+<br>S circle -0.015656716 -0.098766732  -1.3898E-05 -0.099999999
+<br>S circle -1.3898E-05 -0.099999999  0.015629262 -0.09877108
+<br>S circle 0.015629262 -0.09877108  0.0308876 -0.095110232
+<br>S circle 0.0308876 -0.095110232  0.045385428 -0.089107592
+<br>S circle 0.045385428 -0.089107592  0.058765782 -0.080910957
+<br>S circle 0.058765782 -0.080910957  0.070699212 -0.070722142
+<br>S circle 0.070699212 -0.070722142  0.080891895 -0.058792017
+<br>S circle 0.080891895 -0.058792017  0.089092869 -0.045414322
+<br>S circle 0.089092869 -0.045414322  0.09510021 -0.030918442
+<br>S circle 0.09510021 -0.030918442  0.098766006 -0.015661291
+<br>S circle 0.098766006 -0.015661291  0.099999998 -1.85307E-05
+<br>
+</code>
+
+<p>The following sections explain in detail the meaning of each statement.
+
+<p><img src="../../Images/FRC2DCoax.png">
+
+</body>
+</html>
