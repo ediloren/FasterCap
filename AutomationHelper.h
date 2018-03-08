@@ -33,6 +33,17 @@
 #ifndef AUTOMATIONHELPER_DEFS
 #define AUTOMATIONHELPER_DEFS
 
+// definition of wxVariantData needed by the oleutils.h include
+#include <wx/variant.h>
+// for COM Automation
+#include <windows.h>
+#include <objbase.h>
+#include <initguid.h>
+#include <wx/msw/ole/oleutils.h>
+
+// for wxASSERT
+#include <wx/debug.h>
+
 #define ASSERT wxASSERT
 
 

@@ -1,8 +1,20 @@
 FasterCap History
 ==================
-Copyright (c) 2017
+Copyright (c) 2019
 FastFieldSolvers S.R.L.  http://www.fastfieldsolvers.com
 ==================
+
+Version 6.0.7, 2019/07/29
+- Fixed GetConductance bug using Automation under Windows
+- Fixed '-c' option missing in console mode
+
+Version 6.0.6, 2018/03/14
+- Added the '-e' option for output dump in CVS format
+- Added the '-oi' option for dumping "digested" input file
+- Minor bug fixing
+
+Version 6.0.5, 2018/01/26
+- Added the '-oi' option for input dump
 
 Version 6.0.0, 2017/08/24
 - LGPL version

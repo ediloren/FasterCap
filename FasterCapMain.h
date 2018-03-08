@@ -46,9 +46,6 @@
 // run dialog class
 #include "RunDialog.h"
 
-// exported functions
-void PrintRetError(int retErr);
-
 // prototypes
 class RunFCThread;
 

@@ -47,7 +47,10 @@ class CAutoConductor;
 class CAutoPanel : public CAutoElement
 {
 public:
-	double CalcPanelGeomPar();
+    // virtual functions
+	virtual double CalcPanelGeomPar();
+
+	// standard functions
 	char MaxSide(double lside0, double lside1, double lside2);
 	void MakeSuperPanel(CAutoPanel *leftSubPanel, CAutoPanel *rightSubPanel);
     int Subdivide();
@@ -91,8 +94,8 @@ public:
     // for diel normal in opposide direction w.r.t the geometric normal
     // (i.e. panel->m_ucType not flagged AUTOPANEL_OUTPERM_NORMAL_DIR)
     //
-    // 'm_clsNormal' stores the gemetric normal for standard segments,
-    // while for super segments it stores the averaged normal from sub-segments
+    // 'm_clsNormal' stores the gemetric normal for standard panels,
+    // while for super panels it stores the averaged normal from sub-panels
 	inline C3DVector GetGeoNormal()
 	{
 		C3DVector_float unitvector;
@@ -191,16 +194,44 @@ public:
 */
 
 	double m_dMaxSideLen;
-	char m_cMaxSide;
+	unsigned char m_ucMaxSide;
 	C3DVector_float m_clsVertex[3];
 	C3DVector_float m_clsNormal, m_clsCentroid;
 
 protected:
-
-    double CalculateNormal(C3DVector_float &normal);
+    // virtual functions
+    virtual double CalculateNormal(C3DVector_float &normal);
 
 };
 
+// Quadrilateral panel is derived from standard triangular panel
+// The QPanel is used only for dumping input geometry; all other operations
+// rely on the standard triangular panels CAutoPanel.
+// In this case, adding 'm_clsQVertex' on top of 'm_clsVertex' array
+// (wasting memory) is not a big issue, as the number of CAutoQPanel
+// variables will be limited by definiton (no split will occur)
+class CAutoQPanel : public CAutoPanel
+{
+public:
+	// standard functions
+	char MaxSide(double lside[4]);
+
+    //
+	// virtual functions implementation
+
+	void ErrorPrintCoords();
+    unsigned char GetClass()
+    {
+        return AUTOELEMENT_QPANEL;
+    }
+	double CalcPanelGeomPar();
+
+	C3DVector_float m_clsQVertex[4];
+
+protected:
+    // virtual functions implementation
+    double CalculateNormal(C3DVector_float &normal);
+};
 
 typedef std::deque<CAutoPanel*>  StlAutoPanelDeque;
 

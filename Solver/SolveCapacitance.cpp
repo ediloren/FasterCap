@@ -267,286 +267,309 @@ int CSolveCap::SolveMain(CAutoRefGlobalVars globalVars, CLin_Matrix &capRe, CLin
 	float solveTime;
 	bool not_refined_enough;
 	StlAutoCondDeque::iterator itc1;
-
-    // init hierarchical multiplication structures (mainly allocating vectors)
-    ret = m_clsMulthier.AllocateMemory();
-	if(ret != FC_NORMAL_END) {
-		return ret;
-	}
-
-	if(globalVars.m_bAuto == true) {
-
-		LogMsg("Auto calculation with max error: %g\n", globalVars.m_dAutoMaxErr);
-		LogMsg("Remark: Auto option overrides all other Manual settings\n");
-
-		// start timer to time solve step
-		start = clock();
-
-		// clarify we start from scratch
-		globalVars.m_bRefineCharge = false;
-		globalVars.m_bKeepCharge = false;
-		globalVars.m_bKeepMesh = false;
+    
+    // if just dumping the input file
+    if(globalVars.m_bDumpInputGeo == true) {
+        
 		// clean memory (if charges / panels were still allocated after last run,
 		// and are now not used for discretization)
 		m_clsMulthier.Clean(AUTOREFINE_DEALLMEM_AT_START, globalVars);
 
-		// read input file and build super hierarchy;
-		// will also modify 'globalVars' to report if there is complex permittivity
-		ret = InputFile(&globalVars);
-		if(ret != FC_NORMAL_END) {
-			return ret;
-		}
+        ret = m_clsMulthier.ReadFastCapFile(&globalVars);
+        // if any error in ReadFastCapFile() (e.g. out of memory, user break, etc.)
+        if(ret != FC_NORMAL_END) {
+            return ret;
+        }
+        
+        m_clsMulthier.OutputFastCapFile(globalVars.m_sFileIn, "dump");
+    }
+    // actually solving
+    else {
+        // init hierarchical multiplication structures (mainly allocating vectors)
+        ret = m_clsMulthier.AllocateMemory();
+        if(ret != FC_NORMAL_END) {
+            return ret;
+        }
 
-		globalVars.m_dGmresTol = globalVars.m_dAutoMaxErr / 2.0;
-		// set eps to a value far beyond any threshold for refinement, so at first pass
-		// there is no refinement at all
-		globalVars.m_dMeshEps = 1E32;
-		globalVars.m_dEps = globalVars.m_dEpsRatio * globalVars.m_dMeshEps;
+        if(globalVars.m_bAuto == true) {
 
-		LogMsg("\n");
-		OutputSolveParams(globalVars);
-		LogMsg("Number of input panels to solver engine: %lu\n", m_clsMulthier.GetInputPanelNum());
+            LogMsg("Auto calculation with max error: %g\n", globalVars.m_dAutoMaxErr);
+            LogMsg("Remark: Auto option overrides all other Manual settings\n");
 
-		LogMsg("\nIteration number #0 ***************************\n\n");
+            // start timer to time solve step
+            start = clock();
 
-		// set global vars for all subsequent calls to SolveCapacitance routines
-		m_clsGlobalVars = globalVars;
+            // clarify we start from scratch
+            globalVars.m_bRefineCharge = false;
+            globalVars.m_bKeepCharge = false;
+            globalVars.m_bKeepMesh = false;
+            // clean memory (if charges / panels were still allocated after last run,
+            // and are now not used for discretization)
+            m_clsMulthier.Clean(AUTOREFINE_DEALLMEM_AT_START, globalVars);
 
-		LogMsg("***************************************\n");
-		LogMsg("Refining the geometry.. \n");
-		ret = RefineGeoAndCountLinks();
-		if(ret !=  FC_NORMAL_END) {
-			return ret;
-		}
-		LogMsg("Refinement completed\n");
-		OutputMeshParams(globalVars);
+            // read input file and build super hierarchy;
+            // will also modify 'globalVars' to report if there is complex permittivity
+            ret = InputFile(&globalVars);
+            if(ret != FC_NORMAL_END) {
+                return ret;
+            }
 
-		ret = SolveComputeLinks();
-		if(ret !=  FC_NORMAL_END) {
-			return ret;
-		}
+            globalVars.m_dGmresTol = globalVars.m_dAutoMaxErr / 2.0;
+            // set eps to a value far beyond any threshold for refinement, so at first pass
+            // there is no refinement at all
+            globalVars.m_dMeshEps = 1E32;
+            globalVars.m_dEps = globalVars.m_dEpsRatio * globalVars.m_dMeshEps;
 
-		AutoSetPrecondType(m_clsMulthier.GetLinksNum(AUTOREFINE_HIER_PRE_0_LEVEL), m_clsMulthier.m_lCondNum, globalVars);
-		OutputSolvePrecondType(globalVars);
+            LogMsg("\n");
+            OutputSolveParams(globalVars);
+            LogMsg("Number of input panels to solver engine: %lu\n", m_clsMulthier.GetInputPanelNum());
 
-		ret = SolveForCapacitance(&cRe[0], &cIm[0]);
-		if(ret !=  FC_NORMAL_END) {
-			return ret;
-		}
+            LogMsg("\nIteration number #0 ***************************\n\n");
 
-		OutputCapMtx(cRe[0], cIm[0]);
+            // set global vars for all subsequent calls to SolveCapacitance routines
+            m_clsGlobalVars = globalVars;
 
-		OutputSolveStats(globalVars);
+            LogMsg("***************************************\n");
+            LogMsg("Refining the geometry.. \n");
+            ret = RefineGeoAndCountLinks();
+            if(ret !=  FC_NORMAL_END) {
+                return ret;
+            }
+            LogMsg("Refinement completed\n");
+            OutputMeshParams(globalVars);
 
-		finish = clock();
-		solveTime = (float)(finish - start) / CLOCKS_PER_SEC;
+            ret = SolveComputeLinks();
+            if(ret !=  FC_NORMAL_END) {
+                return ret;
+            }
 
-		LogMsg("Iteration time: ");
-		PrintTime(solveTime);
-		LogMsg("Iteration allocated memory: %d kilobytes\n", g_clsMemUsage.GetTotalKB());
+            AutoSetPrecondType(m_clsMulthier.GetLinksNum(AUTOREFINE_HIER_PRE_0_LEVEL), m_clsMulthier.m_lCondNum, globalVars);
+            OutputSolvePrecondType(globalVars);
 
-		oldpanelsnum = m_clsMulthier.GetPanelNum(AUTOREFINE_HIER_PRE_0_LEVEL);
-		oldlinksnum = m_clsMulthier.GetLinksNum(AUTOREFINE_HIER_PRE_0_LEVEL);
+            ret = SolveForCapacitance(&cRe[0], &cIm[0]);
+            if(ret !=  FC_NORMAL_END) {
+                return ret;
+            }
 
-		// free memory, to be ready for next iteration
-		DeallocateMemory(AUTOREFINE_DEALLMEM_AT_END, globalVars);
+            OutputCapMtx(cRe[0], cIm[0], globalVars);
 
+            OutputSolveStats(globalVars);
 
-		for(i=1; i<SOLVE_MAX_AUTO_ITERATIONS; i++) {
+            finish = clock();
+            solveTime = (float)(finish - start) / CLOCKS_PER_SEC;
 
-			// start timer to time solve step
-			start = clock();
+            LogMsg("Iteration time: ");
+            PrintTime(solveTime);
+            LogMsg("Iteration allocated memory: %d kilobytes\n", g_clsMemUsage.GetTotalKB());
 
-			LogMsg("\nIteration number #%d ***************************\n\n", i);
+            oldpanelsnum = m_clsMulthier.GetPanelNum(AUTOREFINE_HIER_PRE_0_LEVEL);
+            oldlinksnum = m_clsMulthier.GetLinksNum(AUTOREFINE_HIER_PRE_0_LEVEL);
 
-			LogMsg("***************************************\n");
-			LogMsg("Increasing the geometric refinement.. \n");
-			not_refined_enough = true;
-			j = 0;
-			do {
-				// make eps converge
-				globalVars.m_dMeshEps = m_clsMulthier.m_dMaxMeshEps / sqrt(2.0);
-				globalVars.m_dEps = globalVars.m_dEpsRatio * globalVars.m_dMeshEps;
-
-				// clean memory (if charges / panels were still allocated after last run,
-				// and are now not used for discretization)
-				m_clsMulthier.Clean(AUTOREFINE_DEALLMEM_AT_START, globalVars);
-
-				// read input file and build super hierarchy;
-				// will also modify 'globalVars' to report if there is complex permittivity
-				ret = InputFile(&globalVars);
-				if(ret != FC_NORMAL_END) {
-					return ret;
-				}
-
-				// set global vars for all subsequent calls to SolveCapacitance routines
-				m_clsGlobalVars = globalVars;
-
-				ret = RefineGeoAndCountLinks();
-				if(ret !=  FC_NORMAL_END) {
-					return ret;
-				}
-
-				newpanelsnum = m_clsMulthier.GetPanelNum(AUTOREFINE_HIER_PRE_0_LEVEL);
-				newlinksnum = m_clsMulthier.GetLinksNum(AUTOREFINE_HIER_PRE_0_LEVEL);
-
-				// if links or panels number stayed the same, increasing the '-m' parameter had no or small effect, so go on
-				if(newlinksnum > oldlinksnum * SOLVE_AUTO_INCREMENT_FACTOR && newpanelsnum > oldpanelsnum * SOLVE_AUTO_INCREMENT_FACTOR) {
-					not_refined_enough = false;
-				}
-				else {
-					LogMsg("Delta in refined panel and link count w.r.t. previous iteration less than %d%%\n", (int)((SOLVE_AUTO_INCREMENT_FACTOR-1.0) * 100.0));
-					LogMsg("(Panels # %d, Links # %d)\n", newpanelsnum, newlinksnum);
-					if(globalVars.m_bVerboseOutput == true) {
-						LogMsg("(Mesh relative refinement value (-m): %g)\n", globalVars.m_dMeshEps);
-					}
-					LogMsg("Automatically increasing the refinement parameters\n");
-				}
-
-				j++;
-
-			}
-			while(not_refined_enough == true && j<SOLVE_MAX_AUTO_ITERATIONS);
-			LogMsg("Refinement completed\n");
-			OutputMeshParams(globalVars);
-
-			ret = SolveComputeLinks();
-			if(ret !=  FC_NORMAL_END) {
-				return ret;
-			}
-
-			AutoSetPrecondType(m_clsMulthier.GetLinksNum(AUTOREFINE_HIER_PRE_0_LEVEL), m_clsMulthier.m_lCondNum, globalVars);
-			OutputSolvePrecondType(globalVars);
-
-			ret = SolveForCapacitance(&cRe[i], &cIm[i]);
-			if(ret !=  FC_NORMAL_END) {
-				return ret;
-			}
-
-			if( m_clsGlobalVars.m_ucHasCmplxPerm == AUTOREFINE_REAL_PERM) {
-				diff = FNorm(cRe[i] - cRe[i-1]) / FNorm(cRe[i]);
-			}
-			else {
-				diff = FNorm(cRe[i] - cRe[i-1], cIm[i] - cIm[i-1]) / FNorm(cRe[i], cIm[i]);
-			}
-
-			OutputCapMtx(cRe[i], cIm[i]);
-
-			LogMsg("Weighted Frobenius norm of the difference between capacitance (auto option): %g\n", diff);
-			OutputSolveStats(globalVars);
-
-			finish = clock();
-			solveTime = (float)(finish - start) / CLOCKS_PER_SEC;
-
-			LogMsg("Iteration time: ");
-			PrintTime(solveTime);
-			LogMsg("Iteration allocated memory: %d kilobytes\n", g_clsMemUsage.GetTotalKB());
-
-			if(diff <= globalVars.m_dAutoMaxErr) {
-				capRe = cRe[i];
-				capIm = cIm[i];
-				break;
-			}
-
-			// save number of panels and of links of last iteration
-			// (only in this case: if the new number of links / panels was not enough, let's refine,
-			// but compare with the oldest number of links / panels)
-			oldpanelsnum = newpanelsnum;
-			oldlinksnum = newlinksnum;
+            // free memory, to be ready for next iteration
+            DeallocateMemory(AUTOREFINE_DEALLMEM_AT_END, globalVars);
 
 
-			// free memory, to be ready for next iteration
-			DeallocateMemory(AUTOREFINE_DEALLMEM_AT_END, globalVars);
-		}
-	}
-	else {
-		// no automatic calculation of parameters
-		//
+            for(i=1; i<SOLVE_MAX_AUTO_ITERATIONS; i++) {
 
-		// clean memory (if charges / panels were still allocated after last run,
-		// and are now not used for discretization)
-		m_clsMulthier.Clean(AUTOREFINE_DEALLMEM_AT_START, globalVars);
+                // start timer to time solve step
+                start = clock();
 
-		if(globalVars.m_bRefineCharge == false && globalVars.m_bKeepMesh == false) {
-			// read input file and build super hierarchy;
-			// will also modify 'globalVars' to report if there is complex permittivity
-			ret = InputFile(&globalVars);
-			if(ret != FC_NORMAL_END) {
-				return ret;
-			}
-		}
+                LogMsg("\nIteration number #%d ***************************\n\n", i);
 
-		LogMsg("\n");
-		OutputSolveParams(globalVars);
-		OutputMeshParams(globalVars);
-		OutputSolvePrecondType(globalVars);
-		LogMsg("Number of input panels to solver engine: %lu\n", m_clsMulthier.GetInputPanelNum());
-		LogMsg("\n");
+                LogMsg("***************************************\n");
+                LogMsg("Increasing the geometric refinement.. \n");
+                not_refined_enough = true;
+                j = 0;
+                do {
+                    // make eps converge
+                    globalVars.m_dMeshEps = m_clsMulthier.m_dMaxMeshEps / sqrt(2.0);
+                    globalVars.m_dEps = globalVars.m_dEpsRatio * globalVars.m_dMeshEps;
 
-		// set global vars for all subsequent calls to SolveCapacitance routines
-		m_clsGlobalVars = globalVars;
+                    // clean memory (if charges / panels were still allocated after last run,
+                    // and are now not used for discretization)
+                    m_clsMulthier.Clean(AUTOREFINE_DEALLMEM_AT_START, globalVars);
 
-		LogMsg("***************************************\n");
-		LogMsg("Refining the geometry.. \n");
-		ret = RefineGeoAndCountLinks();
-		if(ret !=  FC_NORMAL_END) {
-			return ret;
-		}
-		LogMsg("Refinement completed\n");
+                    // read input file and build super hierarchy;
+                    // will also modify 'globalVars' to report if there is complex permittivity
+                    ret = InputFile(&globalVars);
+                    if(ret != FC_NORMAL_END) {
+                        return ret;
+                    }
 
-		ret = SolveComputeLinks();
-		if(ret !=  FC_NORMAL_END) {
-			return ret;
-		}
+                    // set global vars for all subsequent calls to SolveCapacitance routines
+                    m_clsGlobalVars = globalVars;
 
-// debug
-//m_clsMulthier.DebugDumpInteractions();
+                    ret = RefineGeoAndCountLinks();
+                    if(ret !=  FC_NORMAL_END) {
+                        return ret;
+                    }
+
+                    newpanelsnum = m_clsMulthier.GetPanelNum(AUTOREFINE_HIER_PRE_0_LEVEL);
+                    newlinksnum = m_clsMulthier.GetLinksNum(AUTOREFINE_HIER_PRE_0_LEVEL);
+
+                    // if links or panels number stayed the same, increasing the '-m' parameter had no or small effect, so go on
+                    if(newlinksnum > oldlinksnum * SOLVE_AUTO_INCREMENT_FACTOR && newpanelsnum > oldpanelsnum * SOLVE_AUTO_INCREMENT_FACTOR) {
+                        not_refined_enough = false;
+                    }
+                    else {
+                        LogMsg("Delta in refined panel and link count w.r.t. previous iteration less than %d%%\n", (int)((SOLVE_AUTO_INCREMENT_FACTOR-1.0) * 100.0));
+                        LogMsg("(Panels # %d, Links # %d)\n", newpanelsnum, newlinksnum);
+                        if(globalVars.m_bVerboseOutput == true) {
+                            LogMsg("(Mesh relative refinement value (-m): %g)\n", globalVars.m_dMeshEps);
+                        }
+                        LogMsg("Automatically increasing the refinement parameters\n");
+                    }
+
+                    j++;
+
+                }
+                while(not_refined_enough == true && j<SOLVE_MAX_AUTO_ITERATIONS);
+                LogMsg("Refinement completed\n");
+                OutputMeshParams(globalVars);
+
+                ret = SolveComputeLinks();
+                if(ret !=  FC_NORMAL_END) {
+                    return ret;
+                }
+
+                AutoSetPrecondType(m_clsMulthier.GetLinksNum(AUTOREFINE_HIER_PRE_0_LEVEL), m_clsMulthier.m_lCondNum, globalVars);
+                OutputSolvePrecondType(globalVars);
+
+                ret = SolveForCapacitance(&cRe[i], &cIm[i]);
+                if(ret !=  FC_NORMAL_END) {
+                    return ret;
+                }
+
+                if( m_clsGlobalVars.m_ucHasCmplxPerm == AUTOREFINE_REAL_PERM) {
+                    diff = FNorm(cRe[i] - cRe[i-1]) / FNorm(cRe[i]);
+                }
+                else {
+                    diff = FNorm(cRe[i] - cRe[i-1], cIm[i] - cIm[i-1]) / FNorm(cRe[i], cIm[i]);
+                }
+
+                OutputCapMtx(cRe[i], cIm[i], globalVars);
+
+                LogMsg("Weighted Frobenius norm of the difference between capacitance (auto option): %g\n", diff);
+                OutputSolveStats(globalVars);
+
+                finish = clock();
+                solveTime = (float)(finish - start) / CLOCKS_PER_SEC;
+
+                LogMsg("Iteration time: ");
+                PrintTime(solveTime);
+                LogMsg("Iteration allocated memory: %d kilobytes\n", g_clsMemUsage.GetTotalKB());
+
+                if(diff <= globalVars.m_dAutoMaxErr) {
+                    capRe = cRe[i];
+                    capIm = cIm[i];
+                    break;
+                }
+
+                // save number of panels and of links of last iteration
+                // (only in this case: if the new number of links / panels was not enough, let's refine,
+                // but compare with the oldest number of links / panels)
+                oldpanelsnum = newpanelsnum;
+                oldlinksnum = newlinksnum;
 
 
-		ret = SolveForCapacitance(&capRe, &capIm);
-		if(ret !=  FC_NORMAL_END) {
-			return ret;
-		}
+                // free memory, to be ready for next iteration
+                DeallocateMemory(AUTOREFINE_DEALLMEM_AT_END, globalVars);
+            }
+        }
+        else {
+            // no automatic calculation of parameters
+            //
 
-		OutputCapMtx(capRe, capIm);
+            // clean memory (if charges / panels were still allocated after last run,
+            // and are now not used for discretization)
+            m_clsMulthier.Clean(AUTOREFINE_DEALLMEM_AT_START, globalVars);
 
-		OutputSolveStats(globalVars);
-	}
+            if(globalVars.m_bRefineCharge == false && globalVars.m_bKeepMesh == false) {
+                // read input file and build super hierarchy;
+                // will also modify 'globalVars' to report if there is complex permittivity
+                ret = InputFile(&globalVars);
+                if(ret != FC_NORMAL_END) {
+                    return ret;
+                }
+            }
 
-	if(m_clsGlobalVars.m_bOutputCharge == true) {
-		LogMsg("\n");
+            LogMsg("\n");
+            OutputSolveParams(globalVars);
+            OutputMeshParams(globalVars);
+            OutputSolvePrecondType(globalVars);
+            LogMsg("Number of input panels to solver engine: %lu\n", m_clsMulthier.GetInputPanelNum());
+            LogMsg("\n");
 
-		// get number of rows
-		numrows = capRe.dim(1);
+            // set global vars for all subsequent calls to SolveCapacitance routines
+            m_clsGlobalVars = globalVars;
 
-		// scan all conductors, but do not exceed the number of rows (condition 'capnum < numrows')
-		// this is important in 2D case, where the matrix is not square, since the last reference GND
-		// conductor is not considered for raising to 1V
-		for(itc1 = m_clsMulthier.m_stlConductors.begin(), capnum=0;
-		        itc1 != m_clsMulthier.m_stlConductors.end() && capnum < numrows; itc1++) {
+            LogMsg("***************************************\n");
+            LogMsg("Refining the geometry.. \n");
+            ret = RefineGeoAndCountLinks();
+            if(ret !=  FC_NORMAL_END) {
+                return ret;
+            }
+            LogMsg("Refinement completed\n");
 
-			// output charges calculated for each conductor
-			if( (*itc1)->m_bIsDiel == false) {
+            ret = SolveComputeLinks();
+            if(ret !=  FC_NORMAL_END) {
+                return ret;
+            }
 
-				LogMsg("Outputting charge densities for conductor %s..\n", (*itc1)->m_sName);
-				// now scan tree for leaves and write out refined FastCap file
-				m_clsMulthier.OutputFastCapFile(m_clsGlobalVars.m_sFileIn, (*itc1)->m_sName, &(m_pCondCharges[capnum]));
-				LogMsg("Done\n");
+    // debug
+    //m_clsMulthier.DebugDumpInteractions();
 
-				capnum++;
-			}
-		}
-	}
 
-	if(globalVars.m_bOutputGeo == true) {
-		LogMsg("\nOutputting refined geometry in FastCap compatible format..\n");
-		// now scan tree for leaves and write out refined FastCap file
-		m_clsMulthier.OutputFastCapFile(globalVars.m_sFileIn, "ref");
-		LogMsg("Done\n");
-	}
+            ret = SolveForCapacitance(&capRe, &capIm);
+            if(ret !=  FC_NORMAL_END) {
+                return ret;
+            }
 
-	CopyCondNames(g_stlCondNames);
+            OutputCapMtx(capRe, capIm, globalVars);
 
+            OutputSolveStats(globalVars);
+        }
+        
+        // output the capacitance matrix to file, if requested, in CSV format
+        if(globalVars.m_bOutputCapMtx == true) {
+            OutputCapMtxToFile(capRe, capIm, globalVars);
+        }
+
+        if(globalVars.m_bOutputCharge == true) {
+            LogMsg("\n");
+
+            // get number of rows
+            numrows = capRe.dim(1);
+
+            // scan all conductors, but do not exceed the number of rows (condition 'capnum < numrows')
+            // this is important in 2D case, where the matrix is not square, since the last reference GND
+            // conductor is not considered for raising to 1V
+            for(itc1 = m_clsMulthier.m_stlConductors.begin(), capnum=0;
+                    itc1 != m_clsMulthier.m_stlConductors.end() && capnum < numrows; itc1++) {
+
+                // output charges calculated for each conductor
+                if( (*itc1)->m_bIsDiel == false) {
+
+                    LogMsg("Outputting charge densities for conductor %s..\n", (*itc1)->m_sName);
+                    // now scan tree for leaves and write out refined FastCap file
+                    m_clsMulthier.OutputFastCapFile(globalVars.m_sFileIn, (*itc1)->m_sName, &(m_pCondCharges[capnum]));
+                    LogMsg("Done\n");
+
+                    capnum++;
+                }
+            }
+        }
+
+        if(globalVars.m_bOutputGeo == true) {
+            LogMsg("\nOutputting refined geometry in FastCap compatible format..\n");
+            // now scan tree for leaves and write out refined FastCap file
+            m_clsMulthier.OutputFastCapFile(globalVars.m_sFileIn, "ref");
+            LogMsg("Done\n");
+        }
+
+        CopyCondNames(g_stlCondNames);
+    }
+    
 	g_clsMemUsageCopy = g_clsMemUsage;
 	DeallocateMemory(AUTOREFINE_DEALLMEM_AT_END, globalVars);
 	m_clsMulthier.DeallocateMemory();
@@ -602,6 +625,9 @@ void CSolveCap::OutputSolveParams(CAutoRefGlobalVars globalVars)
 	}
 	if(globalVars.m_bOutputCharge == true) {
 		LogMsg("Output charge densities information (-c)\n");
+	}
+	if(globalVars.m_bOutputCapMtx == true) {
+		LogMsg("Output capacitance matrix to file (-e)\n");
 	}
 
 	LogMsg("Solution scheme (-g): ");
@@ -695,7 +721,7 @@ void CSolveCap::OutputSolveStats(CAutoRefGlobalVars globalVars)
 }
 
 // output capacitance matrix
-int CSolveCap::OutputCapMtx(const CLin_Matrix &matrixRe, const CLin_Matrix &matrixIm)
+int CSolveCap::OutputCapMtx(const CLin_Matrix &matrixRe, const CLin_Matrix &matrixIm, CAutoRefGlobalVars globalVars)
 {
 	CLin_subscript M, N, i, j;
 	long ret;
@@ -718,7 +744,7 @@ int CSolveCap::OutputCapMtx(const CLin_Matrix &matrixRe, const CLin_Matrix &matr
 	if(g_ucSolverType == SOLVERGLOBAL_2DSOLVER) {
 		// verify that matrix dimension is compatible with the size of the conductor names array
 		ASSERT(M == stringList.size()-1);
-		if(m_clsGlobalVars.m_bVerboseOutput == false) {
+		if(globalVars.m_bVerboseOutput == false) {
 			if(N>1) {
 				N--;
 			}
@@ -739,7 +765,7 @@ int CSolveCap::OutputCapMtx(const CLin_Matrix &matrixRe, const CLin_Matrix &matr
 		LogMsg("%s  ", its->c_str());
 		for (j=0; j<N; j++) {
 
-			if( m_clsGlobalVars.m_ucHasCmplxPerm == AUTOREFINE_REAL_PERM ) {
+			if( globalVars.m_ucHasCmplxPerm == AUTOREFINE_REAL_PERM ) {
 				if(g_ucSolverType == SOLVERGLOBAL_3DSOLVER) {
 					ret += LogMsg("%g ", matrixRe[i][j]);
 				}
@@ -786,7 +812,7 @@ int CSolveCap::OutputCapMtx(const CLin_Matrix &matrixRe, const CLin_Matrix &matr
 	}
 
 	LogMsg("\n");
-
+   
 	return ret;
 }
 
@@ -803,6 +829,138 @@ void CSolveCap::CopyCondNames(StlStringList &stringList)
 			stringList.push_back((*itc1)->m_sName);
 		}
 	}
+}
+
+// output capacitance matrix to file
+int CSolveCap::OutputCapMtxToFile(const CLin_Matrix &matrixRe, const CLin_Matrix &matrixIm, CAutoRefGlobalVars globalVars)
+{
+	CLin_subscript M, N, i, j;
+	FILE *fout;
+	std::string basefilename, fileoutname;
+	std::string::size_type pos;
+
+
+    M = matrixRe.num_rows();
+    N = matrixRe.num_cols();
+
+    // verify that matrix dimension is the same for the real and imaginary parts
+    ASSERT(M == matrixIm.num_rows());
+    ASSERT(N == matrixIm.num_cols());
+
+    // if 2D solver, remove last row and column
+    if(g_ucSolverType == SOLVERGLOBAL_2DSOLVER) {
+        if(N>1) {
+            N--;
+        }
+        else {
+            ErrMsg("Error: only one input conductor defined for a 2D problem. Result is meaningless.");
+        }
+    }
+
+    // build file out name from 'globalVars.m_sFileIn', stripping old extension if any
+    // and adding ".csv"
+
+    basefilename = globalVars.m_sFileIn;
+    pos = basefilename.rfind(".");
+    // if there was an extension, strip it, otherwise nothing
+    if(pos != basefilename.npos ) {
+        basefilename.resize(pos);
+    }
+    fileoutname = basefilename;
+    fileoutname += ".csv";
+
+    fout = fopen(fileoutname.c_str(), "w");
+
+    if(fout == NULL) {
+        ErrMsg("Warning: cannot open \"%s\" for writing, skipping\n", fileoutname.c_str());
+        return FC_FILE_ERROR;
+    }
+
+    LogMsg("Generating capacitance matrix file \"%s\"\n", fileoutname.c_str());
+   
+    for (i=0; i<M; i++) {
+         for (j=0; j<N; j++) {
+
+            if( globalVars.m_ucHasCmplxPerm == AUTOREFINE_REAL_PERM ) {
+                if(g_ucSolverType == SOLVERGLOBAL_3DSOLVER) {
+                    fprintf(fout, "%g", matrixRe[i][j]);
+                }
+                else {
+                    fprintf(fout, "%g", matrixRe[i][j] * TWO_PI_TIMES_E0);
+                }
+            }
+            else {
+                if(g_ucSolverType == SOLVERGLOBAL_3DSOLVER) {
+                    fprintf(fout, "%g%+gj", matrixRe[i][j], matrixIm[i][j]);
+                }
+                else {
+                    fprintf(fout, "%g%+gj", matrixRe[i][j] * TWO_PI_TIMES_E0, matrixIm[i][j] * TWO_PI_TIMES_E0);
+                }
+            }
+            
+            if(j<N-1) {
+                fprintf(fout, ", ");
+            }
+        }
+        fprintf(fout, "\n");
+    }
+    
+    fclose(fout);
+            
+	return FC_NORMAL_END;
+}
+
+void CSolveCap::PrintTime(float solveTime)
+{
+	long days, hours, minutes, seconds;
+
+	// as per ANSI C spec, if both integer operands are positive or unsigned,
+	// the result is truncated toward 0.
+	seconds = long(solveTime);
+	minutes = seconds / 60;
+	hours = minutes / 60;
+	days = hours / 24;
+	// so now calculate the reminders
+	seconds -= minutes * 60;
+	minutes -= hours * 60;
+	hours -= days * 24;
+
+	LogMsg("%fs (%d days, %d hours, %d mins, %d s)\n", solveTime, days, hours, minutes, seconds);
+}
+
+
+void CSolveCap::PrintRetError(int retErr)
+{
+
+	if(retErr == FC_GENERIC_ERROR) {
+		ErrMsg("\n\nError: Generic error, program execution stopped!\n");
+	}
+	else if(retErr == FC_COMMAND_LINE_ERROR) {
+		ErrMsg("\n\nError: Command line error, solver not launched\n");
+	}
+	else if(retErr == FC_CANNOT_OPEN_FILE) {
+		ErrMsg("\n\nError: Cannot open input file, program execution stopped!\n");
+	}
+	else if(retErr == FC_OUT_OF_MEMORY) {
+		ErrMsg("\n\nError: Out of memory, program execution stopped!\n");
+	}
+	else if(retErr == FC_FILE_ERROR) {
+		ErrMsg("\n\nError: File error, program execution stopped!\n");
+	}
+	else if(retErr == FC_CANNOT_GO_OOC) {
+		ErrMsg("\n\nError: Cannot go Out-of-Core (possibly disk full)!\n");
+	}
+	else if(retErr == FC_EXCEPTION_ERROR) {
+		ErrMsg("\n\nError: Unknown exception catched!\n");
+	}
+	else if(retErr == FC_USER_BREAK) {
+		ErrMsg("\n\nWarning: Program execution stopped on user request!\n");
+	}
+	else if(retErr != FC_NORMAL_END) {
+		ErrMsg("\n\nError: Unknown error code, program execution stopped!\n");
+	}
+
+	ErrMsg("\n");
 }
 
 int CSolveCap::InputFile(CAutoRefGlobalVars *globalVars)
@@ -840,6 +998,7 @@ int CSolveCap::RefineGeoAndCountLinks()
 		globalVars.m_dEps = m_clsGlobalVars.m_dHierPreEps;
 		globalVars.m_dMaxDiscSide = m_clsGlobalVars.m_dMaxHierPreDiscSide;
 		globalVars.m_bOutputGeo = false;
+		globalVars.m_bOutputCapMtx = false;
 
 		ret = m_clsMulthier.AutoRefinePanels(globalVars, AUTOREFINE_HIER_PRE_1_LEVEL);
 		ret = m_clsMulthier.AutoRefineLinks(globalVars);

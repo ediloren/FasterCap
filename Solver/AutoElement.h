@@ -39,6 +39,7 @@ using namespace std;
 // throught the virtual function GetClass()
 #define AUTOELEMENT_SEGMENT     1
 #define AUTOELEMENT_PANEL       2
+#define AUTOELEMENT_QPANEL      4
 
 // constants used in CAutoPanel type 'm_ucType'
 #define AUTOPANEL_IS_LEAF					(unsigned char)1

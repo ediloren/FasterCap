@@ -28,7 +28,7 @@
 								</object>
 								<object class="sizeritem">
 									<object class="wxStaticText" name="ID_ABOUTBOX_COPYRIGHT" variable="StaticText_Copyright" member="yes">
-										<label>Copyright (C) 2012 FastFieldSolvers S.R.L.</label>
+										<label>Copyright (C) 2018 FastFieldSolvers S.R.L.</label>
 									</object>
 									<flag>wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
 									<border>5</border>

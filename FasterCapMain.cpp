@@ -53,7 +53,7 @@
 #include "FasterCapMain.h"
 #include "FasterCapGlobal.h"
 #include "Solver/SolveCapacitance.h"
-#include "CmdLineParser.h"
+#include "FasterCapConsole.h"
 
 // about dialog class
 #include "AboutBox.h"
@@ -63,9 +63,6 @@
 #ifdef DEBUG_TEST_POT
 #  include "test.h"
 #endif //DEBUG_TEST_POT
-
-// temp buffer for LogMsg() and ErrMsg()
-#define FCM_LOG_BUF_SIZE    1024
 
 // wx.pdf version 2.8.12, page 2100
 // for custom WINDOW ID generation
@@ -82,18 +79,7 @@
 volatile bool g_bExitFCThread = false;
 // global pointer to main frame (for log functions)
 FasterCapFrame *g_pFrame = NULL;
-// result matrices and conductor names
-CLin_Matrix g_clsCapMatrixRe, g_clsCapMatrixIm;
-StlStringList g_stlCondNames;
-// statistics:
-//
-// memory used (in the thread)
-CMemoryUsage g_clsMemUsageCopy, g_clsMemUsage;
-// time
-float g_fSolveTime;
-// panels & links
-long g_lPanelsNum;
-long g_lLinksNum;
+
 
 #ifdef __WXMSW__
 
@@ -874,7 +860,7 @@ void *RunFCThread::Entry()
 		(Globals::GetApp())->m_iRetStatus = solveMain.Run(m_pFrame->m_clsGlobalVars);
 
 		// if return code is an error, print it
-		PrintRetError((Globals::GetApp())->m_iRetStatus);
+		solveMain.PrintRetError((Globals::GetApp())->m_iRetStatus);
 
 		// close all open files (in case)
 		// Not used for Unix: as per GNU standard C library: "this function should be used only in special situations (...)
@@ -1070,101 +1056,6 @@ int ErrMsg(const char *fmt,...)
 
 	return ret;
 }
-
-#ifdef DEBUG_LOG_ENABLE
-
-int DebugMsg(const char *fmt,...)
-{
-    int ret = 0;
-
-	wxString msg;
-	va_list arg_ptr;
-	wxDateTime currtime;
-
-	va_start(arg_ptr, fmt);
-
-	ret = msg.PrintfV(fmt, arg_ptr);
-
-	va_end(arg_ptr);
-
-	// if PrintfV() returns error
-	if(ret < 0) {
-		msg = wxT("Error: DebugMsg() is not able to print the message\n");
-	}
-
-	// add timestamp
-	currtime.SetToCurrent();
-	msg = currtime.FormatISODate() + wxT("@") + currtime.FormatISOTime() + wxT(" ") + msg;
-
-	std::cout << msg;
-	std::cout.flush();
-
-	return ret;
-}
-
-#else //not DEBUG_LOG_ENABLE
-
-int DebugMsg(const char *,...)
-{
-
-	return 0;
-}
-
-#endif //DEBUG_LOG_ENABLE
-
-void PrintTime(float solveTime)
-{
-	long days, hours, minutes, seconds;
-
-	// as per ANSI C spec, if both integer operands are positive or unsigned,
-	// the result is truncated toward 0.
-	seconds = long(solveTime);
-	minutes = seconds / 60;
-	hours = minutes / 60;
-	days = hours / 24;
-	// so now calculate the reminders
-	seconds -= minutes * 60;
-	minutes -= hours * 60;
-	hours -= days * 24;
-
-	LogMsg("%fs (%d days, %d hours, %d mins, %d s)\n", solveTime, days, hours, minutes, seconds);
-}
-
-void PrintRetError(int retErr)
-{
-
-	if(retErr == FC_GENERIC_ERROR) {
-		ErrMsg("\n\nError: Generic error, program execution stopped!\n");
-	}
-	else if(retErr == FC_COMMAND_LINE_ERROR) {
-		ErrMsg("\n\nError: Command line error, solver not launched\n");
-	}
-	else if(retErr == FC_CANNOT_OPEN_FILE) {
-		ErrMsg("\n\nError: Cannot open input file, program execution stopped!\n");
-	}
-	else if(retErr == FC_OUT_OF_MEMORY) {
-		ErrMsg("\n\nError: Out of memory, program execution stopped!\n");
-	}
-	else if(retErr == FC_FILE_ERROR) {
-		ErrMsg("\n\nError: File error, program execution stopped!\n");
-	}
-	else if(retErr == FC_CANNOT_GO_OOC) {
-		ErrMsg("\n\nError: Cannot go Out-of-Core (possibly disk full)!\n");
-	}
-	else if(retErr == FC_EXCEPTION_ERROR) {
-		ErrMsg("\n\nError: Unknown exception catched!\n");
-	}
-	else if(retErr == FC_USER_BREAK) {
-		ErrMsg("\n\nWarning: Program execution stopped on user request!\n");
-	}
-	else if(retErr != FC_NORMAL_END) {
-		ErrMsg("\n\nError: Unknown error code, program execution stopped!\n");
-	}
-
-	ErrMsg("\n");
-}
-
-
 
 #ifdef __WXMSW__
 /////////////////////////////////////////////////////////////////////////////
@@ -1420,7 +1311,7 @@ HRESULT STDMETHODCALLTYPE IFasterCap::GetCapacitance(VARIANT *ret)
 
 HRESULT STDMETHODCALLTYPE IFasterCap::GetConductance(VARIANT *ret)
 {
-	VariantCopy(ret, (LPVARIANT) (((Globals::GetApp())->GetFasterCapFrame())->m_clsCapMatrix) );
+	VariantCopy(ret, (LPVARIANT) (((Globals::GetApp())->GetFasterCapFrame())->m_clsCondMatrix) );
 
 	return(NOERROR);
 }
@@ -1436,7 +1327,7 @@ HRESULT STDMETHODCALLTYPE IFasterCap::Run(BSTR commandLine, VARIANT_BOOL *ret)
 {
 	bool status, parserRet;
 	CAutoRefGlobalVars globalVars;
-	CmdLineParser parser;
+	FasterCapConsole console;
 	wxString cmdLine, errMsg;
 
 	*ret = VARIANT_FALSE;
@@ -1455,7 +1346,7 @@ HRESULT STDMETHODCALLTYPE IFasterCap::Run(BSTR commandLine, VARIANT_BOOL *ret)
 		// parse command line
 		//
 
-		parserRet = parser.ParseCmdLine((const char*)cmdLine, globalVars, errMsg);
+		parserRet = console.ParseCmdLine((const char*)cmdLine, globalVars, errMsg);
 
 		// if parser error
 		if(parserRet == true) {

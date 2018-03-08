@@ -288,16 +288,25 @@
 											<option>1</option>
 										</object>
 										<object class="sizeritem">
-											<object class="wxCheckBox" name="ID_DUMP_RESIDUAL" variable="CheckBox_Dump_Residual" member="yes">
-												<label>Dump Gmres residual at each iteration (-r)</label>
+											<object class="wxCheckBox" name="ID_DUMP_GEOMETRY" variable="CheckBox_Dump_Geometry" member="yes">
+												<label>Dump input geometry in FasterCap format and stop (-oi)</label>
+												<handler function="OnCheckBox_Dump_GeometryClick" entry="EVT_CHECKBOX" />
 											</object>
-											<flag>wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+											<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
 											<border>5</border>
 											<option>1</option>
 										</object>
 										<object class="sizeritem">
 											<object class="wxCheckBox" name="ID_OUTPUT_CHARGE" variable="CheckBox_Output_Charge" member="yes">
 												<label>Dump charge densities in output file (-c)</label>
+											</object>
+											<flag>wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<option>1</option>
+										</object>
+										<object class="sizeritem">
+											<object class="wxCheckBox" name="ID_DUMP_RESIDUAL" variable="CheckBox_Dump_Residual" member="yes">
+												<label>Dump Gmres residual at each iteration (-r)</label>
 											</object>
 											<flag>wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
 											<border>5</border>
@@ -314,6 +323,14 @@
 										<object class="sizeritem">
 											<object class="wxCheckBox" name="ID_VERBOSE_OUTPUT" variable="CheckBox_Verbose_Output" member="yes">
 												<label>Verbose output (-v)</label>
+											</object>
+											<flag>wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<option>1</option>
+										</object>
+										<object class="sizeritem">
+											<object class="wxCheckBox" name="ID_OUTPUT_CAPACITANCE" variable="CheckBox_Output_Capacitance" member="yes">
+												<label>Output capacitance matrix to file (-e)</label>
 											</object>
 											<flag>wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
 											<border>5</border>

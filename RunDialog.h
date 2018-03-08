@@ -27,13 +27,13 @@
 
 #ifndef WX_PRECOMP
 	//(*HeadersPCH(RunDialog)
-	#include <wx/checkbox.h>
-	#include <wx/dialog.h>
 	#include <wx/sizer.h>
-	#include <wx/button.h>
-	#include <wx/panel.h>
 	#include <wx/stattext.h>
 	#include <wx/textctrl.h>
+	#include <wx/checkbox.h>
+	#include <wx/panel.h>
+	#include <wx/button.h>
+	#include <wx/dialog.h>
 	//*)
 #endif
 //(*Headers(RunDialog)
@@ -53,34 +53,36 @@ class RunDialog: public wxDialog
         void SetGlobalVarsFileIn(std::string fileIn);
 
 		//(*Declarations(RunDialog)
-		wxCheckBox* CheckBox_Dump_Residual;
-		wxCheckBox* CheckBox_Precond_Jacobi;
-		wxPanel* Panel1;
-		wxCheckBox* CheckBox_Precond_TwoLevels;
-		wxTextCtrl* TextCtrl_MeshEps;
-		wxButton* Button_BrowseInputFile;
-		wxCheckBox* CheckBox_AutoSettings;
-		wxCheckBox* CheckBox_Dump_Time_Mem;
 		wxTextCtrl* TextCtrl_EPS_Ratio;
-		wxTextCtrl* TextCtrl_Autorefine_Out_of_Core;
-		wxStaticText* StaticText1;
-		wxCheckBox* CheckBox_GalerkinScheme;
+		wxCheckBox* CheckBox_AutoSettings;
+		wxCheckBox* CheckBox_Dump_Residual;
 		wxTextCtrl* TextCtrl_Dim_Precond_Two_Levels;
-		wxStaticText* StaticText3;
-		wxCheckBox* CheckBox_Output_Geometry;
-		wxTextCtrl* TextCtrl_GmresTol;
-		wxCheckBox* CheckBox_Auto_Precond;
-		wxStaticText* StaticText8;
-		wxStaticText* StaticText7;
-		wxCheckBox* CheckBox_Verbose_Output;
-		wxStaticText* StaticText4;
-		wxTextCtrl* TextCtrl_Automatic_Error;
-		wxStaticText* StaticText5;
-		wxStaticText* StaticText2;
-		wxTextCtrl* TextCtrl_InputFileName;
-		wxStaticText* StaticText6;
+		wxTextCtrl* TextCtrl_Autorefine_Out_of_Core;
 		wxTextCtrl* TextCtrl_Curvature;
+		wxTextCtrl* TextCtrl_Automatic_Error;
+		wxStaticText* StaticText2;
+		wxStaticText* StaticText6;
+		wxTextCtrl* TextCtrl_MeshEps;
+		wxCheckBox* CheckBox_GalerkinScheme;
+		wxStaticText* StaticText8;
+		wxPanel* Panel1;
+		wxStaticText* StaticText1;
+		wxCheckBox* CheckBox_Output_Geometry;
+		wxStaticText* StaticText3;
 		wxCheckBox* CheckBox_Output_Charge;
+		wxCheckBox* CheckBox_Dump_Time_Mem;
+		wxTextCtrl* TextCtrl_InputFileName;
+		wxStaticText* StaticText5;
+		wxTextCtrl* TextCtrl_GmresTol;
+		wxStaticText* StaticText7;
+		wxCheckBox* CheckBox_Dump_Geometry;
+		wxCheckBox* CheckBox_Precond_Jacobi;
+		wxCheckBox* CheckBox_Verbose_Output;
+		wxButton* Button_BrowseInputFile;
+		wxCheckBox* CheckBox_Auto_Precond;
+		wxCheckBox* CheckBox_Precond_TwoLevels;
+		wxStaticText* StaticText4;
+		wxCheckBox* CheckBox_Output_Capacitance;
 		//*)
 
         wxString m_strSamplePath;
@@ -111,10 +113,12 @@ class RunDialog: public wxDialog
 		static const long ID_STATICTEXT6;
 		static const long ID_DIM_PRECOND_TWO_LEVELS;
 		static const long ID_OUTPUT_GEOMETRY;
-		static const long ID_DUMP_RESIDUAL;
+		static const long ID_DUMP_GEOMETRY;
 		static const long ID_OUTPUT_CHARGE;
+		static const long ID_DUMP_RESIDUAL;
 		static const long ID_DUMP_TIME_MEM;
 		static const long ID_VERBOSE_OUTPUT;
+		static const long ID_OUTPUT_CAPACITANCE;
 		static const long ID_PANEL1;
 		//*)
 
@@ -122,6 +126,7 @@ class RunDialog: public wxDialog
 
 		//(*Handlers(RunDialog)
 		void OnButton_BrowseInputFileClick(wxCommandEvent& event);
+		void OnCheckBox_Dump_GeometryClick(wxCommandEvent& event);
 		//*)
 
     // Implementation

@@ -61,6 +61,8 @@ public:
 	void CopyCondNames(StlStringList &stringList);
 	void DeallocateMemory(int command, CAutoRefGlobalVars globalVars);
 	void DeallocatePrecond();
+    void PrintRetError(int retErr);
+	    
 	CMultHier m_clsMulthier;
 	// only for debug
 	float m_fDurationSolve;
@@ -73,7 +75,9 @@ protected:
 	void OutputMeshParams(CAutoRefGlobalVars globalVars);
 	void OutputSolvePrecondType(CAutoRefGlobalVars globalVars);
 	void OutputSolveStats(CAutoRefGlobalVars globalVars);
-	int OutputCapMtx(const CLin_Matrix &matrixRe, const CLin_Matrix &matrixIm);
+	int OutputCapMtx(const CLin_Matrix &matrixRe, const CLin_Matrix &matrixIm, CAutoRefGlobalVars globalVars);
+	int OutputCapMtxToFile(const CLin_Matrix &matrixRe, const CLin_Matrix &matrixIm, CAutoRefGlobalVars globalVars);
+    void PrintTime(float solveTime);
 	int RefineGeoAndCountLinks();
 	int SolveComputeLinks();
 	int SolveForCapacitance(CLin_Matrix *cRe, CLin_Matrix *cIm);

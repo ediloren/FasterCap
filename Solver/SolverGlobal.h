@@ -28,6 +28,10 @@
 #define AFX_GLOBAL_H__E89AAF21_5486_11D5_9282_04F014C10000__INCLUDED_
 
 #include <string>
+#include <list>
+
+// Needed for CLin_Matrix
+#include "LinAlgebra/Mtx.h"
 
 // error codes returned by FasterCap. Max value limited to int,
 // however to support Linux return codes in a char, limited to 8 bits
@@ -128,8 +132,14 @@ using namespace std;
 #  define isfinite _finite
 #endif
 
+class CMemoryUsage;
+
 // global, type of solver invoked
 extern unsigned char g_ucSolverType;
+typedef std::list<std::string> StlStringList;
+extern StlStringList g_stlCondNames;
+extern CLin_Matrix g_clsCapMatrixRe, g_clsCapMatrixIm;
+extern CMemoryUsage g_clsMemUsageCopy, g_clsMemUsage;
 
 class CMemoryUsage
 {
@@ -163,8 +173,8 @@ public:
 	double m_dMaxDiscSide, m_dEps, m_dMeshEps, m_dEpsRatio, m_dMeshCurvCoeff, m_dGmresTol;
 	double m_dMaxHierPreDiscSide, m_dHierPreEps, m_dHierPreGmresTol;
 	double m_dAutoMaxErr, m_dOutOfCoreRatio;
-	bool m_bDumpResidual, m_bVerboseOutput, m_bOutputGeo, m_bAuto, m_bAutoPrecond, m_bDumpTimeMem;
-	bool m_bKeepCharge, m_bRefineCharge, m_bKeepMesh, m_bOutputCharge;
+	bool m_bDumpResidual, m_bVerboseOutput, m_bOutputGeo, m_bDumpInputGeo, m_bAuto, m_bAutoPrecond, m_bDumpTimeMem;
+	bool m_bKeepCharge, m_bRefineCharge, m_bKeepMesh, m_bOutputCharge, m_bOutputCapMtx;
 	char m_cScheme;
 
 	// variables not linked to user options, but to global statuses

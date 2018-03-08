@@ -31,7 +31,6 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#include <list>
 
 #include <wx/string.h>
 
@@ -45,11 +44,13 @@
 //#define DEBUG_DUMP_UNCOMP_POT
 //#define DEBUG_DUMP_OTHER
 
+// define headless
+//#define FCG_HEADLESS
 
 // version and copyright header messages
 #define FCG_LIC_STD_HEADER1     "FasterCap License"
-#define FCG_HEADER_VERSION      "FasterCap version 6.0.0"
-#define FCG_HEADER_COPYRIGHT    "Copyright 2017 FastFieldSolvers S.R.L."
+#define FCG_HEADER_VERSION      "FasterCap version 6.0.7"
+#define FCG_HEADER_COPYRIGHT    "Copyright 2019 FastFieldSolvers S.R.L."
 #define FCG_HEADER_WEBSITE      "http://www.fastfieldsolvers.com, All Rights reserved"
 // license text file name
 #define FCG_LICENSE_TEXT_FILE_NAME      "LICENCE.txt"
@@ -58,8 +59,10 @@
 // and FC return code defines, etc.
 #include "Solver/SolverGlobal.h"
 
+#ifndef FCG_HEADLESS
 // must include for App pointer global visibility
 #include "FasterCapApp.h"
+#endif // !FCG_HEADLESS
 
 // Needed for CLin_Matrix
 #include "LinAlgebra/Mtx.h"
@@ -70,6 +73,11 @@
 #define FCW_BLACK   1
 #define FCW_RED     2
 
+// temp buffer for LogMsg() and ErrMsg()
+#define FCM_LOG_BUF_SIZE    1024
+
+
+#ifndef FCG_HEADLESS
 // global, exported variables & functions
 
 class Globals {
@@ -87,6 +95,13 @@ protected:
     static FasterCapApp *m_pApp;
 };
 
+// this function is used for system messages (console stdout or
+// GUI MessageBox according to 'FasterCapApp' being a pure console
+// or a GUI)
+void SysMsg(wxString message, wxString caption="Message", long style = wxOK|wxCENTRE);
+
+#endif //FCG_HEADLESS
+
 
 // interrupt FasterCap worker thread
 extern volatile bool g_bFCContinue;
@@ -94,7 +109,6 @@ extern volatile bool g_bFCContinue;
 // later
 //extern char g_sTitle[64];
 extern CLin_Matrix g_clsCapMatrixRe, g_clsCapMatrixIm;
-typedef std::list<std::string> StlStringList;
 extern StlStringList g_stlCondNames;
 extern CMemoryUsage g_clsMemUsageCopy, g_clsMemUsage;
 extern float g_fSolveTime;
@@ -109,13 +123,7 @@ int ErrMsg(const char *fmt,...);
 // this function collects all debug messages (for console only)
 int DebugMsg(const char *fmt,...);
 
-// common print time function
-void PrintTime(float solveTime);
 
-// this function is used for system messages (console stdout or
-// GUI MessageBox according to 'FasterCapApp' being a pure console
-// or a GUI)
-void SysMsg(wxString message, wxString caption="Message", long style = wxOK|wxCENTRE);
 
 #endif //FASTERCAPGLOBAL_H
 

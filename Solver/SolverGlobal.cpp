@@ -31,6 +31,20 @@
 // global, type of solver invoked
 unsigned char g_ucSolverType = SOLVERGLOBAL_3DSOLVER;
 
+// result matrices and conductor names
+CLin_Matrix g_clsCapMatrixRe, g_clsCapMatrixIm;
+StlStringList g_stlCondNames;
+// statistics:
+//
+// memory used (in the thread)
+CMemoryUsage g_clsMemUsageCopy, g_clsMemUsage;
+// time
+float g_fSolveTime;
+// panels & links
+long g_lPanelsNum;
+long g_lLinksNum;
+
+
 CAutoRefGlobalVars::CAutoRefGlobalVars()
 {
 	Reset();
@@ -50,6 +64,7 @@ void CAutoRefGlobalVars::Reset()
 	m_dGmresTol = 0.01;
 	m_dHierPreGmresTol = 0.5;
 	m_bOutputGeo = false;
+	m_bDumpInputGeo = false;
 	m_cScheme = AUTOREFINE_COLLOCATION;
 	m_bAuto = false;
 	m_bAutoPrecond = false;
@@ -59,6 +74,7 @@ void CAutoRefGlobalVars::Reset()
 	m_dMeshCurvCoeff = 3.0;
 	m_dOutOfCoreRatio = 5.0;
 	m_bOutputCharge = false;
+	m_bOutputCapMtx = false;
 	// not used any more in 'Run' dialog, but calculated offline and used globally
 	m_dMaxDiscSide = 0.1;
 	m_dEps = 0.3 * m_dMaxDiscSide;

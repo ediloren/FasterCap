@@ -22,14 +22,20 @@
 ***************************************************************************/
 
 
-#ifndef CMDLINEPARSER_H
-#define CMDLINEPARSER_H
+#ifndef FASTERCAPCONSOLE_H
+#define FASTERCAPCONSOLE_H
 
+#include "FasterCapGlobal.h"
 #include "Solver/SolverGlobal.h"
 
-class CmdLineParser
+class FasterCapConsole
 {
     public:
+#ifdef FCG_HEADLESS
+        int main(int& argc, char **argv, char bOption='\0');
+#else
+        int main(int& argc, wxChar **argv, char bOption='\0');
+#endif // FCG_HEADLESS        int main(int& argc, wxChar **argv, char bOption = '\0');
         bool ParseCmdLine(const char *commandStr, CAutoRefGlobalVars &globalVars, wxString &errMsg);
 
     protected:
@@ -38,4 +44,4 @@ class CmdLineParser
     private:
 };
 
-#endif // CMDLINEPARSER_H
+#endif // FASTERCAPCONSOLE_H

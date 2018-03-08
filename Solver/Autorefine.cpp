@@ -40,6 +40,9 @@
 // for openmp
 #include "omp.h"
 
+// for wxGetFreeMemory()
+#include <wx/utils.h> 
+
 #include "SolverGlobal.h"
 
 #include "Autorefine.h"
@@ -152,13 +155,14 @@ void CAutoRefine::Clean(int command, CAutoRefGlobalVars globalVars)
 	unsigned int i;
 	unsigned long totChunksNum, k;
 	wxFileName tmpFileName;
+    StlAutoCondDeque::iterator itc;
 
 	if( (command == AUTOREFINE_DEALLMEM_ALL) ||
 	        (command == AUTOREFINE_DEALLMEM_AT_END && globalVars.m_bKeepCharge == false) ||
 	        (command == AUTOREFINE_DEALLMEM_AT_START && globalVars.m_bRefineCharge == false && globalVars.m_bKeepMesh == false) ) {
 
-		// delete panel tree
-		DeletePanels();
+		// delete panel tree and conductor list
+		DeletePanelsAndConductors();
 		// delete nodes vector
 		if(m_pNodes != NULL) {
 			delete m_pNodes;
@@ -170,9 +174,6 @@ void CAutoRefine::Clean(int command, CAutoRefGlobalVars globalVars)
 			m_pucDielIndex = NULL;
 		}
 		g_clsMemUsage.m_ulPanelsMem = 0;
-
-		// empty conductor list
-		m_stlConductors.clear();
 		g_clsMemUsage.m_ulCondMem = 0;
 	}
 
@@ -1228,7 +1229,7 @@ void CAutoRefine::SetCurrentConductor(CAutoConductor *m_pCurrCond)
 
 void CAutoRefine::OutputFastCapFile(std::string fileinname, std::string suffix, CLin_Vector *condCharges)
 {
-	FILE *foutlst, *foutgeo;
+	FILE *foutlst;
 	StlAutoCondDeque::iterator itc;
 	std::string basefilename, fileoutname, condfilename, condfilenopath;
 	std::string condfilenameext, condfilenopathext, ext;
@@ -1254,16 +1255,25 @@ void CAutoRefine::OutputFastCapFile(std::string fileinname, std::string suffix, 
 
 	foutlst = fopen(fileoutname.c_str(), "w");
 
-	if(foutlst == NULL)
+	if(foutlst == NULL) {
+        ErrMsg("  Warning: cannot open \"%s\" for writing, skipping\n", fileoutname.c_str());
 		return;
+	}
 
 	LogMsg("  generating list file \"%s\"\n", fileoutname.c_str());
-
-	fprintf(foutlst, "* Refined FastCap file derived from %s\n", fileinname.c_str());
-	fprintf(foutlst, "*\n");
-	fprintf(foutlst, "* Total number of panels %lu\n", m_ulPanelNum[m_ucInteractionLevel]);
-	fprintf(foutlst, "*\n");
-
+	
+    if(m_clsGlobalVars.m_bDumpInputGeo == false) {
+        fprintf(foutlst, "* Refined FastCap file derived from %s\n", fileinname.c_str());
+        fprintf(foutlst, "*\n");
+        fprintf(foutlst, "* Total number of panels %lu\n", m_ulPanelNum[m_ucInteractionLevel]);
+    }
+    else {
+        fprintf(foutlst, "* Dump FasterCap file derived from %s\n", fileinname.c_str());
+        fprintf(foutlst, "*\n");
+        fprintf(foutlst, "* Total number of panels %lu\n", m_ulInputPanelNum);
+    }
+    fprintf(foutlst, "*\n");
+    
 	// output the patches for every conductor
 
 	// scan all conductor groups
@@ -1316,21 +1326,9 @@ void CAutoRefine::OutputFastCapFile(std::string fileinname, std::string suffix, 
 						fprintf(foutlst, "C %s  %g-j%g  0.0 0.0 0.0 +\n", condfilenopathext.c_str(), (*itc)->m_dSurfOutperm[i][0], -1.0 * (*itc)->m_dSurfOutperm[i][1]);
 					}
 				}
-
-				foutgeo = fopen(condfilenameext.c_str(), "w");
-
-				fprintf(foutgeo, "0 Refined FastCap file derived from %s, referenced in list file %s\n", fileinname.c_str(), fileoutname.c_str());
-				fprintf(foutgeo, "*\n");
-
-				// output all panels in tree
-				if(g_ucSolverType == SOLVERGLOBAL_3DSOLVER) {
-					OutputPanelTree((*itc)->m_sName, (*itc)->m_uTopElement.m_pTopPanel, foutgeo, i);
-				}
-				else {
-					OutputPanelTree((*itc)->m_sName, (*itc)->m_uTopElement.m_pTopSegment, foutgeo, i);
-				}
-
-				fclose(foutgeo);
+				
+				// output the panels in the file 'condfilenameext'
+				OutputPanelFile(condfilenameext, fileinname, fileoutname, itc, i);
 			}
 		}
 		// if dielectric
@@ -1364,29 +1362,57 @@ void CAutoRefine::OutputFastCapFile(std::string fileinname, std::string suffix, 
 				}
 			}
 
-			foutgeo = fopen(condfilename.c_str(), "w");
-
-			fprintf(foutgeo, "0 Refined FastCap file derived from %s, referenced in list file %s\n", fileinname.c_str(), fileoutname.c_str());
-			fprintf(foutgeo, "*\n");
-
-			// output all panels in tree
-			if(g_ucSolverType == SOLVERGLOBAL_3DSOLVER) {
-				OutputPanelTree((*itc)->m_sName, (*itc)->m_uTopElement.m_pTopPanel, foutgeo);
-			}
-			else {
-				OutputPanelTree((*itc)->m_sName, (*itc)->m_uTopElement.m_pTopSegment, foutgeo);
-			}
-
-			fclose(foutgeo);
+            // output the panels in the file 'condfilenameext'
+            OutputPanelFile(condfilename, fileinname, fileoutname, itc);
 		}
 	}
 
 	fclose(foutlst);
 }
 
+void CAutoRefine::OutputPanelFile(std::string condfilenameext, std::string fileinname, std::string fileoutname, StlAutoCondDeque::iterator itc, int dielIndex)
+{
+	FILE *foutgeo;
+	
+    foutgeo = fopen(condfilenameext.c_str(), "w");
+
+    if(foutgeo == NULL) {
+        ErrMsg("  Warning: cannot open \"%s\" for writing, skipping\n", condfilenameext.c_str());
+    }
+    else {
+        if(m_clsGlobalVars.m_bDumpInputGeo == false) {
+            fprintf(foutgeo, "0 Refined FastCap file derived from %s, referenced in list file %s\n", fileinname.c_str(), fileoutname.c_str());
+        }
+        else {
+            fprintf(foutgeo, "0 Dump FasterCap file derived from %s, referenced in list file %s\n", fileinname.c_str(), fileoutname.c_str());
+        }
+        fprintf(foutgeo, "*\n");
+
+        if(m_clsGlobalVars.m_bDumpInputGeo == false) {
+            // output all panels in tree
+            if(g_ucSolverType == SOLVERGLOBAL_3DSOLVER) {
+                OutputPanelTree((*itc)->m_sName, (*itc)->m_uTopElement.m_pTopPanel, foutgeo, dielIndex);
+            }
+            else {
+                OutputPanelTree((*itc)->m_sName, (*itc)->m_uTopElement.m_pTopSegment, foutgeo, dielIndex);
+            }
+        }
+        else {
+            // output all panels in the list
+            if(g_ucSolverType == SOLVERGLOBAL_3DSOLVER) {
+                OutputPanelList(itc, foutgeo, dielIndex);
+            }
+            else {
+                ErrMsg("  Warning: input file dump not implemented yet for 2D case, skipping\n");
+            }
+        }
+
+        fclose(foutgeo);
+    }
+}
+
 void CAutoRefine::OutputPanelTree(char *condname, CAutoPanel *panel, FILE *fout, int dielIndex)
 {
-	C3DVector dielrefpoint;
 
 	// visit the tree
 
@@ -1397,49 +1423,7 @@ void CAutoRefine::OutputPanelTree(char *condname, CAutoPanel *panel, FILE *fout,
 
 	// termination condition
 	if (panel->IsLeaf() == true) {
-		// output panel only if there is no reference to the permittivity array (i.e. dielectric)
-		// or if the dielectric index of the panel matches the current diel index
-		if(dielIndex == AUTOREFINE_NO_DIEL_INDEX || panel->m_ucDielIndex == dielIndex) {
-			// in this case, output panel
-			if(m_clsGlobalVars.m_bOutputCharge == true && m_pLocalCondCharge != NULL) {
-				fprintf(fout, "T %s  %g %g %g %g %g %g %g %g %g", condname,
-				        panel->m_clsVertex[0].x, panel->m_clsVertex[0].y, panel->m_clsVertex[0].z,
-				        panel->m_clsVertex[1].x, panel->m_clsVertex[1].y, panel->m_clsVertex[1].z,
-				        panel->m_clsVertex[2].x, panel->m_clsVertex[2].y, panel->m_clsVertex[2].z);
-				if((panel->m_ucType & AUTOPANEL_OUTPERM_ELEMENT_LEVEL) == AUTOPANEL_OUTPERM_ELEMENT_LEVEL) {
-					// local dielectric reference point
-					dielrefpoint = panel->GetCentroid() + panel->GetDielNormal();
-					fprintf(fout, "  %g %g %g", dielrefpoint.x, dielrefpoint.y, dielrefpoint.z);
-				}
-				fprintf(fout, "  %e\n", (*m_pLocalCondCharge)[panel->m_lIndex[AUTOREFINE_HIER_PRE_0_LEVEL]] / panel->GetDimension());
-			}
-			else if(m_clsGlobalVars.m_bKeepCharge == true) {
-				fprintf(fout, "T %s  %g %g %g %g %g %g %g %g %g", condname,
-				        panel->m_clsVertex[0].x, panel->m_clsVertex[0].y, panel->m_clsVertex[0].z,
-				        panel->m_clsVertex[1].x, panel->m_clsVertex[1].y, panel->m_clsVertex[1].z,
-				        panel->m_clsVertex[2].x, panel->m_clsVertex[2].y, panel->m_clsVertex[2].z);
-				if((panel->m_ucType & AUTOPANEL_OUTPERM_ELEMENT_LEVEL) == AUTOPANEL_OUTPERM_ELEMENT_LEVEL) {
-					// local dielectric reference point
-					dielrefpoint = panel->GetCentroid() + panel->GetDielNormal();
-					fprintf(fout, "  %g %g %g", dielrefpoint.x, dielrefpoint.y, dielrefpoint.z);
-				}
-				fprintf(fout, "  %e\n", m_fGlobalCharges[panel->m_lIndex[AUTOREFINE_HIER_PRE_0_LEVEL]] / panel->GetDimension());
-			}
-			else {
-				fprintf(fout, "T %s  %g %g %g %g %g %g %g %g %g", condname,
-				        panel->m_clsVertex[0].x, panel->m_clsVertex[0].y, panel->m_clsVertex[0].z,
-				        panel->m_clsVertex[1].x, panel->m_clsVertex[1].y, panel->m_clsVertex[1].z,
-				        panel->m_clsVertex[2].x, panel->m_clsVertex[2].y, panel->m_clsVertex[2].z);
-				if((panel->m_ucType & AUTOPANEL_OUTPERM_ELEMENT_LEVEL) == AUTOPANEL_OUTPERM_ELEMENT_LEVEL) {
-					// local dielectric reference point
-					dielrefpoint = panel->GetCentroid() + panel->GetDielNormal();
-					fprintf(fout, "  %g %g %g\n", dielrefpoint.x, dielrefpoint.y, dielrefpoint.z);
-				}
-				else {
-					fprintf(fout, "\n");
-				}
-			}
-		}
+        OutputPanel(condname, panel, fout, dielIndex);
 	}
 	else {
 		// otherwise, scan the tree
@@ -1515,6 +1499,67 @@ void CAutoRefine::OutputPanelTree(char *condname, CAutoSegment *panel, FILE *fou
 	}
 }
 
+void CAutoRefine::OutputPanelList(StlAutoCondDeque::iterator itc, FILE *fout, int dielIndex)
+{
+	StlAutoPanelDeque::iterator itp;
+
+	// scan every panel inside the conductor
+    for(itp=(*itc)->m_stlPanels.begin(); itp!=(*itc)->m_stlPanels.end(); itp++) {
+        OutputPanel((*itc)->m_sName, *itp, fout, dielIndex);
+    }	
+}
+
+void CAutoRefine::OutputPanel(char *condname, CAutoPanel *panel, FILE *fout, int dielIndex)
+{
+   	C3DVector dielrefpoint;
+   	CAutoQPanel *qpanel;
+
+    // output panel only if there is no reference to the permittivity array (i.e. dielectric)
+    // or if the dielectric index of the panel matches the current diel index
+    if(dielIndex == AUTOREFINE_NO_DIEL_INDEX || panel->m_ucDielIndex == dielIndex) {
+        // in this case, output panel
+        //
+        // if triangular panel
+        if(panel->GetClass() == AUTOELEMENT_PANEL) {
+            fprintf(fout, "T %s  %g %g %g  %g %g %g  %g %g %g", condname,
+                        panel->m_clsVertex[0].x, panel->m_clsVertex[0].y, panel->m_clsVertex[0].z,
+                        panel->m_clsVertex[1].x, panel->m_clsVertex[1].y, panel->m_clsVertex[1].z,
+                        panel->m_clsVertex[2].x, panel->m_clsVertex[2].y, panel->m_clsVertex[2].z);
+        }
+        // if quadrilateral panel
+        else {
+            if (panel->GetClass() == AUTOELEMENT_QPANEL) {
+                // re-cast to correct class (quick way)
+                qpanel = (CAutoQPanel*)panel;
+				fprintf(fout, "Q %s  %g %g %g  %g %g %g  %g %g %g  %g %g %g", condname,
+                        qpanel->m_clsQVertex[0].x, qpanel->m_clsQVertex[0].y, qpanel->m_clsQVertex[0].z,
+                        qpanel->m_clsQVertex[1].x, qpanel->m_clsQVertex[1].y, qpanel->m_clsQVertex[1].z,
+                        qpanel->m_clsQVertex[2].x, qpanel->m_clsQVertex[2].y, qpanel->m_clsQVertex[2].z,
+                        qpanel->m_clsQVertex[3].x, qpanel->m_clsQVertex[3].y, qpanel->m_clsQVertex[3].z);
+            }
+            else {
+                // unknown class
+                ErrMsg("Internal error: OutputPanel() trying to output a panel of an unknown class\n");
+            }
+        }
+
+        if((panel->m_ucType & AUTOPANEL_OUTPERM_ELEMENT_LEVEL) == AUTOPANEL_OUTPERM_ELEMENT_LEVEL) {
+            // local dielectric reference point
+            dielrefpoint = panel->GetCentroid() + panel->GetDielNormal();
+            fprintf(fout, "  %g %g %g", dielrefpoint.x, dielrefpoint.y, dielrefpoint.z);
+        }
+
+        if(m_clsGlobalVars.m_bOutputCharge == true && m_pLocalCondCharge != NULL && m_clsGlobalVars.m_bDumpInputGeo == false) {
+            fprintf(fout, "  %e\n", (*m_pLocalCondCharge)[panel->m_lIndex[AUTOREFINE_HIER_PRE_0_LEVEL]] / panel->GetDimension());
+        }
+        else if(m_clsGlobalVars.m_bKeepCharge == true && m_clsGlobalVars.m_bDumpInputGeo == false) {
+            fprintf(fout, "  %e\n", m_fGlobalCharges[panel->m_lIndex[AUTOREFINE_HIER_PRE_0_LEVEL]] / panel->GetDimension());
+        }
+        else {
+            fprintf(fout, "\n");
+        }
+    }
+}
 
 #ifdef DEBUG_DUMP_BASIC
 #ifdef DEBUG_DUMP_OTHER
@@ -2012,7 +2057,7 @@ void CAutoRefine::DebugDumpInteractions()
 	fclose(fp);
 }
 
-void CAutoRefine::DeletePanels()
+void CAutoRefine::DeletePanelsAndConductors()
 {
 	StlAutoCondDeque::iterator itc;
 
@@ -2022,9 +2067,13 @@ void CAutoRefine::DeletePanels()
 		if((*itc)->m_uTopElement.m_pTopPanel != NULL) {
 			((*itc)->m_uTopElement.m_pTopPanel)->DeleteElementsTree();
 		}
+        // empty panel list
+        (*itc)->m_stlPanels.clear();
 		// delete conductor
 		delete *itc;
 	}
+    // empty conductor list
+	m_stlConductors.clear();
 }
 
 
@@ -5082,32 +5131,6 @@ int CAutoRefine::Parse3DInputFile(char *fileinname, FILE *parentFid, StlFilePosM
 			}
 			else {
 
-				// check for planarity
-				is_planar = true;
-				for(i=0; i<4; i++) {
-					dist = op.PointPlaneDist(qvertex[i], plane);
-					if(fabs(dist) > AUTOPANEL_EPS) {
-						if(globalVars->m_bWarnGivenSkew == false) {
-							// signal we already warned the user about skewed input quadrilaterals
-							globalVars->m_bWarnGivenSkew = true;
-							ErrMsg("Warning: non-planar quadrilateral panels found in the input file\n");
-							ErrMsg("         splitting into two triangles only (no quality triangulation) along the smaller diagonal\n");
-						}
-						if(globalVars->m_bVerboseOutput == true) {
-							ErrMsg("Warning: non-planar quadrilateral panel 'Q' found (skewed vertexes), corner coordinates are:\n");
-							ErrMsg("         (%g,%g,%g) (%g,%g,%g) (%g,%g,%g) (%g,%g,%g)\n",
-							       qvertex[0].x, qvertex[0].y, qvertex[0].z,
-							       qvertex[1].x, qvertex[1].y, qvertex[1].z,
-							       qvertex[2].x, qvertex[2].y, qvertex[2].z,
-							       qvertex[3].x, qvertex[3].y, qvertex[3].z);
-							ErrMsg("         distance of vertex #%d from the supporting plane is %g against max tolerance of %g\n", i+1, fabs(dist), AUTOPANEL_EPS);
-							ErrMsg("         panel definition found at line %d of the input file \"%s\"\n", linenum, fileinname);
-							is_planar = false;
-							break;
-						}
-					}
-				}
-
 				// concat name with group name
 				strcpy(name, groupname);
 				// if this is a dielectric interface, ignore specific conductor names
@@ -5121,303 +5144,340 @@ int CAutoRefine::Parse3DInputFile(char *fileinname, FILE *parentFid, StlFilePosM
 					break;
 				}
 
-				// if check of planarity was not ok
-				if(is_planar == false) {
-
-					diag1 = Mod(qvertex[2] - qvertex[0]);
-					diag2 = Mod(qvertex[3] - qvertex[1]);
-
-					// create first triangle
-					//
-
-					if(diag1 <= diag2) {
-						vertex[0] = qvertex[0];
-						vertex[1] = qvertex[1];
-						vertex[2] = qvertex[2];
-					}
-					else {
-						vertex[0] = qvertex[0];
-						vertex[1] = qvertex[1];
-						vertex[2] = qvertex[3];
-					}
-
-					// create (triangular) panels
-
-					ret = (long)CreatePanel(vertex, tmpname, dielIndex, &itc, fileinname, linenum, AUTOREFINE_TRIANGULATE_CREATE_PANEL, globalVars, uselocaldiel, localDielrefpoint);
+                // only if dumping input geometry, must keep (valid) quadrilateral panels as they are
+                if(globalVars->m_bDumpInputGeo == true) {
+					// create (quadrilateral) panel
+					ret = (long)CreateQPanel(qvertex, tmpname, dielIndex, &itc, fileinname, linenum, globalVars, uselocaldiel, localDielrefpoint, plane);
 					if(ret != FC_NORMAL_END) {
 						break;
 					}
+                }
+                else {
+
+                    // check for planarity
+                    is_planar = true;
+                    for(i=0; i<4; i++) {
+                        dist = op.PointPlaneDist(qvertex[i], plane);
+                        if(fabs(dist) > AUTOPANEL_EPS) {
+                            if(globalVars->m_bWarnGivenSkew == false) {
+                                // signal we already warned the user about skewed input quadrilaterals
+                                globalVars->m_bWarnGivenSkew = true;
+                                ErrMsg("Warning: non-planar quadrilateral panels found in the input file\n");
+                                ErrMsg("         splitting into two triangles only (no quality triangulation) along the smaller diagonal\n");
+                            }
+                            if(globalVars->m_bVerboseOutput == true) {
+                                ErrMsg("Warning: non-planar quadrilateral panel 'Q' found (skewed vertexes), corner coordinates are:\n");
+                                ErrMsg("         (%g,%g,%g) (%g,%g,%g) (%g,%g,%g) (%g,%g,%g)\n",
+                                       qvertex[0].x, qvertex[0].y, qvertex[0].z,
+                                       qvertex[1].x, qvertex[1].y, qvertex[1].z,
+                                       qvertex[2].x, qvertex[2].y, qvertex[2].z,
+                                       qvertex[3].x, qvertex[3].y, qvertex[3].z);
+                                ErrMsg("         distance of vertex #%d from the supporting plane is %g against max tolerance of %g\n", i+1, fabs(dist), AUTOPANEL_EPS);
+                                ErrMsg("         panel definition found at line %d of the input file \"%s\"\n", linenum, fileinname);
+                                is_planar = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    // if check of planarity was not ok
+                    if(is_planar == false) {
+
+                        diag1 = Mod(qvertex[2] - qvertex[0]);
+                        diag2 = Mod(qvertex[3] - qvertex[1]);
+
+                        // create first triangle
+                        //
+
+                        if(diag1 <= diag2) {
+                            vertex[0] = qvertex[0];
+                            vertex[1] = qvertex[1];
+                            vertex[2] = qvertex[2];
+                        }
+                        else {
+                            vertex[0] = qvertex[0];
+                            vertex[1] = qvertex[1];
+                            vertex[2] = qvertex[3];
+                        }
+
+                        // create (triangular) panels
+
+                        ret = (long)CreatePanel(vertex, tmpname, dielIndex, &itc, fileinname, linenum, AUTOREFINE_TRIANGULATE_CREATE_PANEL, globalVars, uselocaldiel, localDielrefpoint);
+                        if(ret != FC_NORMAL_END) {
+                            break;
+                        }
 
 
-					// create second triangle
-					//
+                        // create second triangle
+                        //
 
-					if(diag1 <= diag2) {
-						vertex[0] = qvertex[2];
-						vertex[1] = qvertex[3];
-						vertex[2] = qvertex[0];
-					}
-					else {
-						vertex[0] = qvertex[1];
-						vertex[1] = qvertex[2];
-						vertex[2] = qvertex[3];
-					}
+                        if(diag1 <= diag2) {
+                            vertex[0] = qvertex[2];
+                            vertex[1] = qvertex[3];
+                            vertex[2] = qvertex[0];
+                        }
+                        else {
+                            vertex[0] = qvertex[1];
+                            vertex[1] = qvertex[2];
+                            vertex[2] = qvertex[3];
+                        }
 
-					// create (triangular) panels
+                        // create (triangular) panels
 
-					ret = (long)CreatePanel(vertex, tmpname, dielIndex, &itc, fileinname, linenum, AUTOREFINE_TRIANGULATE_CREATE_PANEL, globalVars, uselocaldiel, localDielrefpoint);
-					if(ret != FC_NORMAL_END) {
-						break;
-					}
+                        ret = (long)CreatePanel(vertex, tmpname, dielIndex, &itc, fileinname, linenum, AUTOREFINE_TRIANGULATE_CREATE_PANEL, globalVars, uselocaldiel, localDielrefpoint);
+                        if(ret != FC_NORMAL_END) {
+                            break;
+                        }
 
-				}
-				// if check of planarity was ok
-				else {
-					//
-					// quality-triangulate the quadrilateral panel
-					//
+                    }
+                    // if check of planarity was ok
+                    else {
+                        //
+                        // quality-triangulate the quadrilateral panel
+                        //
 
-					// two options here. If the quadrilateral panel is (almost) a rectangle, divide
-					// it into well formed rectangles and split them in triangles (so the minimum angle is
-					// not too small and we avoid the issues with the quality triangulation of long
-					// thin rectangles: in that case, in fact, if we create two thin triangles splitting
-					// the rectangle in two, then the triangulation recovers the quality of the resulting
-					// triangles but leaves some artifacts in the form of very small triangles)
+                        // two options here. If the quadrilateral panel is (almost) a rectangle, divide
+                        // it into well formed rectangles and split them in triangles (so the minimum angle is
+                        // not too small and we avoid the issues with the quality triangulation of long
+                        // thin rectangles: in that case, in fact, if we create two thin triangles splitting
+                        // the rectangle in two, then the triangulation recovers the quality of the resulting
+                        // triangles but leaves some artifacts in the form of very small triangles)
 
-					// calculate sides and sides length
-					sides[0] = qvertex[1] - qvertex[0];
-					sides[1] = qvertex[2] - qvertex[1];
-					sides[2] = qvertex[3] - qvertex[2];
-					sides[3] = qvertex[0] - qvertex[3];
-					for(i=0; i<4; i++) {
-						dsides[i] = Mod(sides[i]);
-					}
+                        // calculate sides and sides length
+                        sides[0] = qvertex[1] - qvertex[0];
+                        sides[1] = qvertex[2] - qvertex[1];
+                        sides[2] = qvertex[3] - qvertex[2];
+                        sides[3] = qvertex[0] - qvertex[3];
+                        for(i=0; i<4; i++) {
+                            dsides[i] = Mod(sides[i]);
+                        }
 
-					cosangle = DotProd(sides[0], sides[1]) / (dsides[0] * dsides[1]);
+                        cosangle = DotProd(sides[0], sides[1]) / (dsides[0] * dsides[1]);
 
-					// if the quadrilateral panel has almost equal length opposite sides
-					// and the angles are around 90 deg (i.e. the quadrilateral is not skewed)
-					if( fabs(dsides[2] - dsides[0]) < dsides[0] * AUTOREFINE_QUAD_SIDE_TOL &&
-					        fabs(dsides[3] - dsides[1]) < dsides[1] * AUTOREFINE_QUAD_SIDE_TOL &&
-					        fabs(cosangle) < AUTOREFINE_QUAD_ANGLE_TOL ) {
+                        // if the quadrilateral panel has almost equal length opposite sides
+                        // and the angles are around 90 deg (i.e. the quadrilateral is not skewed)
+                        if( fabs(dsides[2] - dsides[0]) < dsides[0] * AUTOREFINE_QUAD_SIDE_TOL &&
+                                fabs(dsides[3] - dsides[1]) < dsides[1] * AUTOREFINE_QUAD_SIDE_TOL &&
+                                fabs(cosangle) < AUTOREFINE_QUAD_ANGLE_TOL ) {
 
-						// if taller than thinner, rotate corners
-						if(dsides[0] < dsides[1]) {
-							// nodes[0] is used as temp var
-							nodes[0] = qvertex[0];
-							qvertex[0] = qvertex[1];
-							qvertex[1] = qvertex[2];
-							qvertex[2] = qvertex[3];
-							qvertex[3] = nodes[0];
+                            // if taller than thinner, rotate corners
+                            if(dsides[0] < dsides[1]) {
+                                // nodes[0] is used as temp var
+                                nodes[0] = qvertex[0];
+                                qvertex[0] = qvertex[1];
+                                qvertex[1] = qvertex[2];
+                                qvertex[2] = qvertex[3];
+                                qvertex[3] = nodes[0];
 
-							nodes[0] = sides[0];
-							sides[0] = sides[1];
-							sides[1] = sides[2];
-							sides[2] = sides[3];
-							sides[3] = nodes[0];
+                                nodes[0] = sides[0];
+                                sides[0] = sides[1];
+                                sides[1] = sides[2];
+                                sides[2] = sides[3];
+                                sides[3] = nodes[0];
 
-							// mod is used as temp var
-							mod = dsides[0];
-							dsides[0] = dsides[1];
-							dsides[1] = dsides[2];
-							dsides[2] = dsides[3];
-							dsides[3] = mod;
-						}
+                                // mod is used as temp var
+                                mod = dsides[0];
+                                dsides[0] = dsides[1];
+                                dsides[1] = dsides[2];
+                                dsides[2] = dsides[3];
+                                dsides[3] = mod;
+                            }
 
-						// must divide side 0 and 2. Remark: casting will always round down to the lower integer,
-						// so we add 0.5 as a trick to round to the closest integer
-						numsegs = (long)(dsides[0] / (dsides[1] * 5.0) + 0.5);
+                            // must divide side 0 and 2. Remark: casting will always round down to the lower integer,
+                            // so we add 0.5 as a trick to round to the closest integer
+                            numsegs = (long)(dsides[0] / (dsides[1] * 5.0) + 0.5);
 
-						nodes[0] = qvertex[0];
-						nodes[3] = qvertex[3];
-						// numsegs = 1 means 'do not subdivide'
-						if(numsegs == 0) {
-							numsegs = 1;
-						}
-						span01 = sides[0] / (double)numsegs;
-						span32 = -sides[2] / (double)numsegs;
+                            nodes[0] = qvertex[0];
+                            nodes[3] = qvertex[3];
+                            // numsegs = 1 means 'do not subdivide'
+                            if(numsegs == 0) {
+                                numsegs = 1;
+                            }
+                            span01 = sides[0] / (double)numsegs;
+                            span32 = -sides[2] / (double)numsegs;
 
-						for(i=0; i<numsegs-1; i++) {
+                            for(i=0; i<numsegs-1; i++) {
 
-							nodes[1] = nodes[0] + span01;
-							nodes[2] = nodes[3] + span32;
+                                nodes[1] = nodes[0] + span01;
+                                nodes[2] = nodes[3] + span32;
 
-							// create first triangle
-							vertex[0] = nodes[0];
-							vertex[1] = nodes[1];
-							vertex[2] = nodes[2];
-							// create (triangular) panels
-							ret = (long)CreatePanel(vertex, tmpname, dielIndex, &itc, fileinname, linenum, AUTOREFINE_TRIANGULATE_CREATE_PANEL, globalVars, uselocaldiel, localDielrefpoint);
-							if(ret != FC_NORMAL_END) {
-								break;
-							}
-							// create second triangle
-							vertex[0] = nodes[0];
-							vertex[1] = nodes[2];
-							vertex[2] = nodes[3];
-							// create (triangular) panels
-							ret = (long)CreatePanel(vertex, tmpname, dielIndex, &itc, fileinname, linenum, AUTOREFINE_TRIANGULATE_CREATE_PANEL, globalVars, uselocaldiel, localDielrefpoint);
-							if(ret != FC_NORMAL_END) {
-								break;
-							}
+                                // create first triangle
+                                vertex[0] = nodes[0];
+                                vertex[1] = nodes[1];
+                                vertex[2] = nodes[2];
+                                // create (triangular) panels
+                                ret = (long)CreatePanel(vertex, tmpname, dielIndex, &itc, fileinname, linenum, AUTOREFINE_TRIANGULATE_CREATE_PANEL, globalVars, uselocaldiel, localDielrefpoint);
+                                if(ret != FC_NORMAL_END) {
+                                    break;
+                                }
+                                // create second triangle
+                                vertex[0] = nodes[0];
+                                vertex[1] = nodes[2];
+                                vertex[2] = nodes[3];
+                                // create (triangular) panels
+                                ret = (long)CreatePanel(vertex, tmpname, dielIndex, &itc, fileinname, linenum, AUTOREFINE_TRIANGULATE_CREATE_PANEL, globalVars, uselocaldiel, localDielrefpoint);
+                                if(ret != FC_NORMAL_END) {
+                                    break;
+                                }
 
-							// and move to next one
-							nodes[0] = nodes[1];
-							nodes[3] = nodes[2];
-						}
+                                // and move to next one
+                                nodes[0] = nodes[1];
+                                nodes[3] = nodes[2];
+                            }
 
-						if(ret != FC_NORMAL_END) {
-							break;
-						}
+                            if(ret != FC_NORMAL_END) {
+                                break;
+                            }
 
-						// last ones (uses real vertexes to eliminate roundoffs)
-						nodes[1] = qvertex[1];
-						nodes[2] = qvertex[2];
+                            // last ones (uses real vertexes to eliminate roundoffs)
+                            nodes[1] = qvertex[1];
+                            nodes[2] = qvertex[2];
 
-						// create first triangle
-						vertex[0] = nodes[0];
-						vertex[1] = nodes[1];
-						vertex[2] = nodes[2];
-						// create (triangular) panels
-						ret = (long)CreatePanel(vertex, tmpname, dielIndex, &itc, fileinname, linenum, AUTOREFINE_TRIANGULATE_CREATE_PANEL, globalVars, uselocaldiel, localDielrefpoint);
-						if(ret != FC_NORMAL_END) {
-							break;
-						}
-						// create second triangle
-						vertex[0] = nodes[0];
-						vertex[1] = nodes[2];
-						vertex[2] = nodes[3];
-						// create (triangular) panels
-						ret = (long)CreatePanel(vertex, tmpname, dielIndex, &itc, fileinname, linenum, AUTOREFINE_TRIANGULATE_CREATE_PANEL, globalVars, uselocaldiel, localDielrefpoint);
-						if(ret != FC_NORMAL_END) {
-							break;
-						}
+                            // create first triangle
+                            vertex[0] = nodes[0];
+                            vertex[1] = nodes[1];
+                            vertex[2] = nodes[2];
+                            // create (triangular) panels
+                            ret = (long)CreatePanel(vertex, tmpname, dielIndex, &itc, fileinname, linenum, AUTOREFINE_TRIANGULATE_CREATE_PANEL, globalVars, uselocaldiel, localDielrefpoint);
+                            if(ret != FC_NORMAL_END) {
+                                break;
+                            }
+                            // create second triangle
+                            vertex[0] = nodes[0];
+                            vertex[1] = nodes[2];
+                            vertex[2] = nodes[3];
+                            // create (triangular) panels
+                            ret = (long)CreatePanel(vertex, tmpname, dielIndex, &itc, fileinname, linenum, AUTOREFINE_TRIANGULATE_CREATE_PANEL, globalVars, uselocaldiel, localDielrefpoint);
+                            if(ret != FC_NORMAL_END) {
+                                break;
+                            }
 
-					}
-					else {
+                        }
+                        else {
 
-						// find a suitable projection plane
-						// (triangulation is 2D!)
-						c3 = op.FindProjPlane(&c1, &c2, plane.m_vecNormal);
+                            // find a suitable projection plane
+                            // (triangulation is 2D!)
+                            c3 = op.FindProjPlane(&c1, &c2, plane.m_vecNormal);
 
-						// Note that the cartesian axes follow the right hand rule, so
-						// a different behaviour is observed for Y and X, Z axes. I.e:
-						//
-						//        Z
-						//        ^  _ Y
-						//        |  /|
-						//        | /
-						//         /----> X
-						//
-						// if normal is along X, projection plane x,y is Y,Z
-						// if normal is along Y, projection plane x,y is -X,Z.
-						// if normal is along Z, projection plane x,y is X,Y.
-						//
-						// in fact, for projection on X,Z (normal along Y), the direction of X
-						// must be reversed, to be coherent with the general rule.
-						// Otherwise, the face loops would be oriented CW in the projection plane,
-						// instead than CCW, so must re-orient them.
-						// To re-orient the loops, simply multiply by 'dir' one of the two coordinates.
-						if(c3 == C3D_DIR_Y) {
-							dir = plane.m_vecNormal[c3] < 0 ? 1.0 : -1.0;
-						}
-						else
-							dir = plane.m_vecNormal[c3] > 0 ? 1.0 : -1.0;
+                            // Note that the cartesian axes follow the right hand rule, so
+                            // a different behaviour is observed for Y and X, Z axes. I.e:
+                            //
+                            //        Z
+                            //        ^  _ Y
+                            //        |  /|
+                            //        | /
+                            //         /----> X
+                            //
+                            // if normal is along X, projection plane x,y is Y,Z
+                            // if normal is along Y, projection plane x,y is -X,Z.
+                            // if normal is along Z, projection plane x,y is X,Y.
+                            //
+                            // in fact, for projection on X,Z (normal along Y), the direction of X
+                            // must be reversed, to be coherent with the general rule.
+                            // Otherwise, the face loops would be oriented CW in the projection plane,
+                            // instead than CCW, so must re-orient them.
+                            // To re-orient the loops, simply multiply by 'dir' one of the two coordinates.
+                            if(c3 == C3D_DIR_Y) {
+                                dir = plane.m_vecNormal[c3] < 0 ? 1.0 : -1.0;
+                            }
+                            else
+                                dir = plane.m_vecNormal[c3] > 0 ? 1.0 : -1.0;
 
-						//
-						// create vertexes list for Delaunay triangulation
-						//
+                            //
+                            // create vertexes list for Delaunay triangulation
+                            //
 
-						// clean up the previous list (if any)
-						tri.vertexes.resize(0);
-						// and insert the vertexes
-						for(i=0; i<4; i++) {
+                            // clean up the previous list (if any)
+                            tri.vertexes.resize(0);
+                            // and insert the vertexes
+                            for(i=0; i<4; i++) {
 
-							tri.vertexes.push_back( C2DVector(dir * qvertex[i][c1], qvertex[i][c2]) );
-						}
+                                tri.vertexes.push_back( C2DVector(dir * qvertex[i][c1], qvertex[i][c2]) );
+                            }
 
-						// Delaunay triangulate
-						tri.Triangulate();
-
-
-						//
-						// Now insert constraints (useful for concave quadrilaterals)
-						//
-
-						for(i=0; i<4; i++) {
-
-							if(i<3) {
-								j = i+1;
-							}
-							else {
-								j = 0;
-							}
-
-							tri.InsertConstrEdge(C2DVector(dir * qvertex[i][c1], qvertex[i][c2]), C2DVector(dir * qvertex[j][c1], qvertex[j][c2]));
-						}
-
-						//
-						// make holes / concavities
-						//
-
-						for(i=0; i<4; i++) {
-
-							if(i<3) {
-								j = i+1;
-							}
-							else {
-								j = 0;
-							}
-							tri.DeleteCWEdges(C2DVector(dir * qvertex[i][c1], qvertex[i][c2]), C2DVector(dir * qvertex[j][c1], qvertex[j][c2]));
-						}
-
-						// refine mesh triangles whose smallest angle is < minAngle degrees
-						tri.Refine(AUTOREFINE_MIN_ANGLE);
-
-						// then at last generate triangulation
-						tri.GenerateTriangles();
-
-// debug
-//FILE *fp;
-//fp = fopen("triangulation.txt", "w");
-//fprintf(fp, "0 triangulation debug\n\n");
-
-						// and insert shiny new triangles in front of the face list of
-						// this face's parent shell
-						for(i=0; i<tri.GetTriangleNum(); i++) {
-
-							tri.GetTriangleCoords(i, &vertex2d[0], &vertex2d[1], &vertex2d[2]);
-
-							// flip coordinates if required
-							vertex2d[0].x *= dir;
-							vertex2d[1].x *= dir;
-							vertex2d[2].x *= dir;
-
-							vertex[0] = plane.Point3Dfrom2D(vertex2d[0], c1, c2, c3);
-							vertex[1] = plane.Point3Dfrom2D(vertex2d[1], c1, c2, c3);
-							vertex[2] = plane.Point3Dfrom2D(vertex2d[2], c1, c2, c3);
-
-// debug
-//fprintf(fp, "T 1  %g %g %g  %g %g %g  %g %g %g\n",
-//        vertex[0].x, vertex[0].y, vertex[0].z,
-//        vertex[1].x, vertex[1].y, vertex[1].z,
-//        vertex[2].x, vertex[2].y, vertex[2].z);
+                            // Delaunay triangulate
+                            tri.Triangulate();
 
 
-							// create (triangular) panels
+                            //
+                            // Now insert constraints (useful for concave quadrilaterals)
+                            //
 
-							ret = (long)CreatePanel(vertex, tmpname, dielIndex, &itc, fileinname, linenum, AUTOREFINE_TRIANGULATE_CREATE_PANEL, globalVars, uselocaldiel, localDielrefpoint);
-							if(ret != FC_NORMAL_END) {
-								break;
-							}
-						}
-// debug
-//fclose(fp);
-						if(ret != FC_NORMAL_END) {
-							break;
-						}
-					}
-				}
+                            for(i=0; i<4; i++) {
+
+                                if(i<3) {
+                                    j = i+1;
+                                }
+                                else {
+                                    j = 0;
+                                }
+
+                                tri.InsertConstrEdge(C2DVector(dir * qvertex[i][c1], qvertex[i][c2]), C2DVector(dir * qvertex[j][c1], qvertex[j][c2]));
+                            }
+
+                            //
+                            // make holes / concavities
+                            //
+
+                            for(i=0; i<4; i++) {
+
+                                if(i<3) {
+                                    j = i+1;
+                                }
+                                else {
+                                    j = 0;
+                                }
+                                tri.DeleteCWEdges(C2DVector(dir * qvertex[i][c1], qvertex[i][c2]), C2DVector(dir * qvertex[j][c1], qvertex[j][c2]));
+                            }
+
+                            // refine mesh triangles whose smallest angle is < minAngle degrees
+                            tri.Refine(AUTOREFINE_MIN_ANGLE);
+
+                            // then at last generate triangulation
+                            tri.GenerateTriangles();
+
+    // debug
+    //FILE *fp;
+    //fp = fopen("triangulation.txt", "w");
+    //fprintf(fp, "0 triangulation debug\n\n");
+
+                            // and insert shiny new triangles in front of the face list of
+                            // this face's parent shell
+                            for(i=0; i<tri.GetTriangleNum(); i++) {
+
+                                tri.GetTriangleCoords(i, &vertex2d[0], &vertex2d[1], &vertex2d[2]);
+
+                                // flip coordinates if required
+                                vertex2d[0].x *= dir;
+                                vertex2d[1].x *= dir;
+                                vertex2d[2].x *= dir;
+
+                                vertex[0] = plane.Point3Dfrom2D(vertex2d[0], c1, c2, c3);
+                                vertex[1] = plane.Point3Dfrom2D(vertex2d[1], c1, c2, c3);
+                                vertex[2] = plane.Point3Dfrom2D(vertex2d[2], c1, c2, c3);
+
+    // debug
+    //fprintf(fp, "T 1  %g %g %g  %g %g %g  %g %g %g\n",
+    //        vertex[0].x, vertex[0].y, vertex[0].z,
+    //        vertex[1].x, vertex[1].y, vertex[1].z,
+    //        vertex[2].x, vertex[2].y, vertex[2].z);
+
+
+                                // create (triangular) panels
+
+                                ret = (long)CreatePanel(vertex, tmpname, dielIndex, &itc, fileinname, linenum, AUTOREFINE_TRIANGULATE_CREATE_PANEL, globalVars, uselocaldiel, localDielrefpoint);
+                                if(ret != FC_NORMAL_END) {
+                                    break;
+                                }
+                            }
+    // debug
+    //fclose(fp);
+                            if(ret != FC_NORMAL_END) {
+                                break;
+                            }
+                        }
+                    }
+                }
 			}
 			// counting 'raw' panels (i.e. the panel # in the input file, no input refinement, e.g. Q panels
 			// split into triangles)
@@ -6022,6 +6082,114 @@ int CAutoRefine::CreatePanel(C3DVector_float vertex[3], char *nakedname, unsigne
 	return FC_NORMAL_END;
 }
 
+// create quadrilateral panel (only for input dumping)
+int CAutoRefine::CreateQPanel(C3DVector qvertex[4], char *nakedname, unsigned char dielIndex,
+                             StlAutoCondDeque::iterator *itc, char *fileinname, long linenum, CAutoRefGlobalVars *globalVars,
+                             bool uselocaldiel, C3DVector &localDielrefpoint, C3DPlane plane)
+
+{
+    int i;
+	float tmpref;
+	double cosmin, dist;
+	CAutoQPanel *newpanel;
+    C3DOperation op;
+
+	// create new panel
+	// SAFENEW_RET(TYPE, VAR, MEM)
+	SAFENEW_RET(CAutoQPanel, newpanel, g_clsMemUsage.m_ulPanelsMem)
+
+	// store panel coordinates
+	for(i=0; i<4; i++) {
+		newpanel->m_clsQVertex[i] = qvertex[i];
+	}
+
+    // check for planarity
+    for(i=0; i<4; i++) {
+        dist = op.PointPlaneDist(qvertex[i], plane);
+        if(fabs(dist) > AUTOPANEL_EPS) {
+            if(globalVars->m_bWarnGivenSkew == false) {
+                // signal we already warned the user about skewed input quadrilaterals
+                globalVars->m_bWarnGivenSkew = true;
+                ErrMsg("Warning: non-planar quadrilateral panels found in the input file\n");
+                ErrMsg("         Panel geometrical parameters (e.g. normal) will be incorrect\n");
+            }
+            if(globalVars->m_bVerboseOutput == true) {
+                ErrMsg("Warning: non-planar quadrilateral panel 'Q' found (skewed vertexes), corner coordinates are:\n");
+                ErrMsg("         (%g,%g,%g) (%g,%g,%g) (%g,%g,%g) (%g,%g,%g)\n",
+                       qvertex[0].x, qvertex[0].y, qvertex[0].z,
+                       qvertex[1].x, qvertex[1].y, qvertex[1].z,
+                       qvertex[2].x, qvertex[2].y, qvertex[2].z,
+                       qvertex[3].x, qvertex[3].y, qvertex[3].z);
+                ErrMsg("         distance of vertex #%d from the supporting plane is %g against max tolerance of %g\n", i+1, fabs(dist), AUTOPANEL_EPS);
+                ErrMsg("         panel definition found at line %d of the input file \"%s\"\n", linenum, fileinname);
+                break;
+            }
+        }
+    }
+
+	// compute panel geometrical parameters
+	cosmin = newpanel->CalcPanelGeomPar();
+
+	// if dielectric panel, calculate outperm side with respect to normal
+	if((**itc)->m_bIsDiel == true) {
+		if(uselocaldiel == true) {
+			tmpref = DotProd( ( localDielrefpoint - newpanel->m_clsQVertex[0]), newpanel->m_clsNormal );
+			// mark the panel to remember that the outperm direction was calculated w.r.t. a local panel indication,
+			// and not the global conductor refpoint definition
+			newpanel->m_ucType |= AUTOPANEL_OUTPERM_ELEMENT_LEVEL;
+		}
+		else {
+			tmpref = DotProd( ( (**itc)->m_clsDielRef3DPoint - newpanel->m_clsQVertex[0]), newpanel->m_clsNormal );
+		}
+
+		if( tmpref > 0 ) {
+			newpanel->m_ucType |= (AUTOPANEL_IS_DIEL | AUTOPANEL_OUTPERM_NORMAL_DIR);
+		}
+		else {
+			newpanel->m_ucType |= AUTOPANEL_IS_DIEL;
+		}
+	}
+	// otherwise, conductor panel; store a reference to the dielectric constant index
+	else {
+		newpanel->m_ucDielIndex = dielIndex;
+	}
+
+	// cosmin is the cosinus of the minimum angle of the quadrilateral; check if it is too thin
+	if(cosmin >= AUTOREFINE_COS_MIN) {
+		if(globalVars->m_bWarnGivenThin == false) {
+			// signal we already warned the user about thin triangles
+			globalVars->m_bWarnGivenThin = true;
+			ErrMsg("Warning: thin quadrilateral (min angle less than %g degrees) found in the input file\n", acos(AUTOREFINE_COS_MIN) * 180.0 / PI);
+		}
+		if(globalVars->m_bVerboseOutput == true) {
+			// signal we already warned the user about thin triangles
+			ErrMsg("Warning: thin quadrilateral found, corner coordinates are:\n");
+            ErrMsg("         (%g,%g,%g) (%g,%g,%g) (%g,%g,%g) (%g,%g,%g)\n",
+                   qvertex[0].x, qvertex[0].y, qvertex[0].z,
+                   qvertex[1].x, qvertex[1].y, qvertex[1].z,
+                   qvertex[2].x, qvertex[2].y, qvertex[2].z,
+                   qvertex[3].x, qvertex[3].y, qvertex[3].z);
+			ErrMsg("         min angle is: %g\n", acos(cosmin) * 180.0 / PI);
+			ErrMsg("         conductor name in the input file is %s, decorated conductor name is %s\n", nakedname, (**itc)->m_sName);
+			ErrMsg("         thin triangle panel definition found at line %d of the input file \"%s\"\n", linenum, fileinname);
+		}
+	}
+
+	// increase panel counter
+	m_ulInputPanelNum++;
+
+	// now itc points to the correct conductor,
+	// can add the panel to panel list
+	(**itc)->m_stlPanels.push_back(newpanel);
+	(**itc)->m_ulInputPanelNum++;
+#ifdef DEBUG_DUMP_BASIC
+	// store reference to conductor
+	newpanel->m_pCond = **itc;
+#endif
+
+	return FC_NORMAL_END;
+}
+
 int CAutoRefine::CreateSegment(C2DVector_float vertex[2], char *nakedname, unsigned char dielIndex,
                                StlAutoCondDeque::iterator *itc, char *fileinname, long linenum, CAutoRefGlobalVars *globalVars,
                                bool uselocaldiel, C3DVector &localDielrefpoint)
@@ -6601,3 +6769,5 @@ void wxGetMemoryInfo(long *memTotal, long *memUsed, long *memFree)
 }
 
 */
+
+

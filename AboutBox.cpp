@@ -72,7 +72,7 @@ AboutBox::AboutBox(wxWindow* parent,wxWindowID ,const wxPoint& ,const wxSize& )
 	BoxSizer2 = new wxBoxSizer(wxVERTICAL);
 	StaticText_Version = new wxStaticText(Panel1, ID_ABOUTBOX_VERSION, _("FasterCap Version X.X.X"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_ABOUTBOX_VERSION"));
 	BoxSizer2->Add(StaticText_Version, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
-	StaticText_Copyright = new wxStaticText(Panel1, ID_ABOUTBOX_COPYRIGHT, _("Copyright (C) 2012 FastFieldSolvers S.R.L."), wxDefaultPosition, wxDefaultSize, 0, _T("ID_ABOUTBOX_COPYRIGHT"));
+	StaticText_Copyright = new wxStaticText(Panel1, ID_ABOUTBOX_COPYRIGHT, _("Copyright (C) 2018 FastFieldSolvers S.R.L."), wxDefaultPosition, wxDefaultSize, 0, _T("ID_ABOUTBOX_COPYRIGHT"));
 	BoxSizer2->Add(StaticText_Copyright, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
 	StaticText_WebSite = new wxStaticText(Panel1, ID_ABOUTBOX_WEBSITE, _("http://www.fastfieldsolvers.com"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_ABOUTBOX_WEBSITE"));
 	BoxSizer2->Add(StaticText_WebSite, 1, wxALL|wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);

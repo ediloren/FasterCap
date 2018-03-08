@@ -37,7 +37,9 @@
 // for memory state and debug macros (e.g. _ASSERT), when using MS VisualC++
 #include <crtdbg.h>
 #else
-#define _ASSERT wxASSERT
+// for wxASSERT
+#  include <wx/debug.h>
+#  define _ASSERT wxASSERT
 #endif
 
 // for wxFileName
@@ -211,7 +213,7 @@ protected:
 	void DumpMemoryInfo();
 	void CopyCharges(CAutoElement *panel);
 	void RecurseIndex(CAutoElement *panel);
-	void DeletePanels();
+	void DeletePanelsAndConductors();
 	void DeleteLinkArray(unsigned int level);
 	CAutoPanel *RecurBuild3DSuperHier(unsigned long firstPanel, unsigned long panelNum, C3DBBox *bbox);
 	CAutoSegment *RecurBuild2DSuperHier(unsigned long firstPanel, unsigned long panelNum, C3DBBox *bbox);
@@ -225,11 +227,17 @@ protected:
 	int CreatePanel(C3DVector_float vertex[3], char *nakedname, unsigned char dielIndex,
 							  StlAutoCondDeque::iterator *itc, char *fileinname, long linenum, char opType, CAutoRefGlobalVars *globalVars,
 							  bool uselocaldiel, C3DVector &localDielrefpoint);
+	int CreateQPanel(C3DVector qvertex[4], char *nakedname, unsigned char dielIndex,
+							  StlAutoCondDeque::iterator *itc, char *fileinname, long linenum, CAutoRefGlobalVars *globalVars,
+							  bool uselocaldiel, C3DVector &localDielrefpoint, C3DPlane plane);
 	int CreateSegment(C2DVector_float vertex[2], char *nakedname, unsigned char dielIndex,
 							  StlAutoCondDeque::iterator *itc, char *fileinname, long linenum, CAutoRefGlobalVars *globalVars,
 							  bool uselocaldiel, C3DVector &localDielrefpoint);
+    void OutputPanelFile(std::string condfilenameext, std::string fileinname, std::string fileoutname, StlAutoCondDeque::iterator itc, int dielIndex = AUTOREFINE_NO_DIEL_INDEX);
 	void OutputPanelTree(char *condname, CAutoPanel *panel, FILE *fout, int dielIndex = AUTOREFINE_NO_DIEL_INDEX);
 	void OutputPanelTree(char *condname, CAutoSegment *panel, FILE *fout, int dielIndex = AUTOREFINE_NO_DIEL_INDEX);
+    void OutputPanelList(StlAutoCondDeque::iterator itc, FILE *fout, int dielIndex);
+    void OutputPanel(char *condname, CAutoPanel *panel, FILE *fout, int dielIndex);
 	int Discretize(CAutoPanel *panel);
 	int DiscretizeSelf(CAutoPanel *panel);
 	int DiscretizeSelf(CAutoSegment *panel);

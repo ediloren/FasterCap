@@ -1368,7 +1368,7 @@ double CPotential::CornerPotential(C3DVector_float vertexes[3], bool divideByAre
 {
 	C3DVector side1, side2, side3;
 	double a, c, m, theta, sqr1plusm2, m_by_tghalftheta, ca;
-	double area;                                                                                                                                                                                                                                                                                                                                                                 ca;
+	double area;
 
 	// compute side vectors of triangle
 	side1 = vertexes[1] - vertexes[0];

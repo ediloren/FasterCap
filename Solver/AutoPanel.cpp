@@ -44,6 +44,10 @@
 #define AUTOPANEL_SQR2                          1.4142135623730950488016887242097
 
 
+///////////////////////
+// CAutoPanel
+///////////////////////
+
 double CAutoPanel::CalcPanelGeomPar()
 {
 	C3DVector side[3];
@@ -107,7 +111,7 @@ char CAutoPanel::MaxSide(double lside0, double lside1, double lside2)
 	// find out max lenght panel sides, and index of min side
 
 	if( (lside0 >= lside1) && (lside0 >= lside2) ) {
-		m_cMaxSide = 0;
+		m_ucMaxSide = 0;
 		m_dMaxSideLen = lside0;
 		if(lside1 >= lside2) {
 			minside = 2;
@@ -117,7 +121,7 @@ char CAutoPanel::MaxSide(double lside0, double lside1, double lside2)
 		}
 	}
 	else if( (lside1 >= lside0) && (lside1 >= lside2) ) {
-		m_cMaxSide = 1;
+		m_ucMaxSide = 1;
 		m_dMaxSideLen = lside1;
 		if(lside0 >= lside2) {
 			minside = 2;
@@ -127,7 +131,7 @@ char CAutoPanel::MaxSide(double lside0, double lside1, double lside2)
 		}
 	}
 	else {
-		m_cMaxSide = 2;
+		m_ucMaxSide = 2;
 		m_dMaxSideLen = lside2;
 		if(lside0 >= lside1) {
 			minside = 1;
@@ -140,6 +144,8 @@ char CAutoPanel::MaxSide(double lside0, double lside1, double lside2)
 	return minside;
 }
 
+// normal to be updated is passed as an argument, as in some cases this is not
+// the 'm_clsNormal' member of the CAutoPanel class (see GetGeoNormal() )
 double CAutoPanel::CalculateNormal(C3DVector_float &normal)
 {
 	double normalMod;
@@ -161,6 +167,15 @@ double CAutoPanel::CalculateNormal(C3DVector_float &normal)
 	//         1------2             O
 	//
 	// Side benefit: module of the normal is 2xArea (like for cross(side1, side2) )
+	// This is because the Newell method
+	// calculates the normal from the areas of the projections of the polygon on the three
+	// cartesian planes. The projected areas are computed as the sum of the signed areas
+	// of the trapezoidal regions enclosed between the each edge of the projected polygon
+	// and its projection onto the cartesian axes.
+	// The 2x coefficient is only because, to speed up the calculation, the trapezoidal
+	// area formula that would require division by 2 is not used, in favor of a simple
+	// multiplication with no division by 2, as only the proportions are important for the
+	// polygon normal calculation.
 
 	// clear the normal vector
 	normal.pos(0.0, 0.0, 0.0);
@@ -360,7 +375,7 @@ void CAutoPanel::MakeSuperPanel(CAutoPanel *leftSubPanel, CAutoPanel *rightSubPa
 	m_clsVertex[2] = m_clsCentroid - yversor * (R/2.0) + xversor * (a/2.0);
 
 	// and finally mark max side (any of the three, the triangle is equilateral)
-	m_cMaxSide = 0;
+	m_ucMaxSide = 0;
 	m_dMaxSideLen = a;
 }
 
@@ -390,7 +405,7 @@ int CAutoPanel::Subdivide()
 	GetRightChild()->m_pParent = this;
 #endif
 
-	maxSide = m_cMaxSide;
+	maxSide = m_ucMaxSide;
 
 	if(maxSide == 0) {
 
@@ -515,5 +530,148 @@ void CAutoPanel::ErrorPrintCoords()
 	       m_clsVertex[2].x, m_clsVertex[2].y, m_clsVertex[2].z);
 	ErrMsg("       centroid is : (%g,%g,%g)\n",
 	       GetCentroid().x, GetCentroid().y, GetCentroid().z);
+}
+
+///////////////////////
+// CAutoQPanel
+///////////////////////
+
+
+double CAutoQPanel::CalcPanelGeomPar()
+{
+	C3DVector side[4];
+	double normalMod, sidelen[4], cosmin, cosangle;
+	int i;
+
+	// compute panel geometrical parameters
+	//
+
+	side[0] = m_clsQVertex[1] - m_clsQVertex[0];
+	side[1] = m_clsQVertex[2] - m_clsQVertex[1];
+	side[2] = m_clsQVertex[3] - m_clsQVertex[2];
+	side[3] = m_clsQVertex[0] - m_clsQVertex[3];
+
+	sidelen[0] = Mod(side[0]);
+	sidelen[1] = Mod(side[1]);
+	sidelen[2] = Mod(side[2]);
+	sidelen[3] = Mod(side[3]);
+
+	normalMod = CalculateNormal(m_clsNormal);
+
+	// compute panel area
+	m_dDimension = normalMod / 2.0;
+
+	// compute centroid
+	m_clsCentroid = (m_clsQVertex[0] + m_clsQVertex[1] + m_clsQVertex[2] + m_clsQVertex[3]) / 4.0;
+
+
+	// compare and store max relative side sizes
+	MaxSide(sidelen);
+
+	//
+	// return cos(min angle), for thin quadrilateral check
+	//
+
+	// calculate cos(min angle)
+	cosmin = 1.0;
+	for(i=0; i<4; i++) {
+        cosangle = DotProd(side[i], side[(i+1)%4]) / (sidelen[i] * sidelen[(i+1)%4]);
+        if(cosangle < cosmin) {
+            cosmin = cosangle;
+        }
+	}
+	return cosmin;
+}
+
+char CAutoQPanel::MaxSide(double lside[4])
+{
+	unsigned char minside;
+	int i;
+
+	// find out max lenght panel sides, and index of min side
+	m_ucMaxSide = 0;
+	minside = 0;
+    for (i=1; i<4; i++) {
+        if(lside[i] >= lside[m_ucMaxSide]) {
+            m_ucMaxSide = i;
+        }
+        if(lside[i] < lside[minside]) {
+            minside = i;
+        }
+    }
+    m_dMaxSideLen = lside[m_ucMaxSide];
+
+	return minside;
+}
+
+double CAutoQPanel::CalculateNormal(C3DVector_float &normal)
+{
+	double normalMod;
+	unsigned char i, j;
+
+
+	// compute unit vector normal of the polygon
+	// using Newell's method (see e.g. graphics gems III, V.5)
+	// Plane normal direction is so that N x point1-point3
+	// is directed inside the polygon.
+	// For nonplanar polygons, Newell’s method computes a “best-fit” normal
+	//
+	//         3                    O
+	//         |\                   O
+	//    N    | \                  O
+	//     \   |  \                 O
+	//      \  |   \                O
+	//       \ |    \               O
+	//        \|     \              O
+	//         1------2             O
+	//
+	// Side benefit: module of the normal is 2xArea. This is because the Newell method
+	// calculates the normal from the areas of the projections of the polygon on the three
+	// cartesian planes. The projected areas are computed as the sum of the signed areas
+	// of the trapezoidal regions enclosed between the each edge of the projected polygon
+	// and its projection onto the cartesian axes.
+	// The 2x coefficient is only because, to speed up the calculation, the trapezoidal
+	// area formula that would require division by 2 is not used, in favor of a simple
+	// multiplication with no division by 2, as only the proportions are important for the
+	// polygon normal calculation.
+
+	// clear the normal vector
+	normal.pos(0.0, 0.0, 0.0);
+	// scan all points
+	for(i = 0; i < 4; i++) {
+
+		// compute cyclic index of next vertex
+		j = i+1;
+		if(j>3) {
+			j = 0;
+		}
+
+		// calculate components of normal vector, using the
+		// fact that the area of the trapezoids projected on the
+		// xy, xz, yz planes is proportional to the z, y, x
+		// components of the normal
+		normal.x += (m_clsQVertex[i].y - m_clsQVertex[j].y) * (m_clsQVertex[i].z + m_clsQVertex[j].z);
+		normal.y += (m_clsQVertex[i].z - m_clsQVertex[j].z) * (m_clsQVertex[i].x + m_clsQVertex[j].x);
+		normal.z += (m_clsQVertex[i].x - m_clsQVertex[j].x) * (m_clsQVertex[i].y + m_clsQVertex[j].y);
+	}
+	// no need to check the actual length of the vector, since if the points are almost collinear,
+	// the check below on cosmin will return a thin angle detection
+	normalMod = normal.Mod();
+	if(normalMod > AUTOPANEL_EPS) {
+		normal /= normalMod;
+	}
+
+	return normalMod;
+}
+
+void CAutoQPanel::ErrorPrintCoords()
+{
+	ErrMsg("       Qpanel %lx corner coordinates are: (%g,%g,%g) (%g,%g,%g) (%g,%g,%g) (%g,%g,%g)\n", this,
+	       m_clsQVertex[0].x, m_clsQVertex[0].y, m_clsQVertex[0].z,
+	       m_clsQVertex[1].x, m_clsQVertex[1].y, m_clsQVertex[1].z,
+	       m_clsQVertex[2].x, m_clsQVertex[2].y, m_clsQVertex[2].z,
+	       m_clsQVertex[3].x, m_clsQVertex[3].y, m_clsQVertex[3].z);
+//	ErrMsg("       centroid is : (%g,%g,%g)\n",
+//	       GetCentroid().x, GetCentroid().y, GetCentroid().z);
 }
 

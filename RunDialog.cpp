@@ -27,8 +27,8 @@
 
 #ifndef WX_PRECOMP
 	//(*InternalHeadersPCH(RunDialog)
-	#include <wx/string.h>
 	#include <wx/intl.h>
+	#include <wx/string.h>
 	//*)
 #endif
 //(*InternalHeaders(RunDialog)
@@ -58,10 +58,12 @@ const long RunDialog::ID_PRECOND_TWO_LEVELS = wxNewId();
 const long RunDialog::ID_STATICTEXT6 = wxNewId();
 const long RunDialog::ID_DIM_PRECOND_TWO_LEVELS = wxNewId();
 const long RunDialog::ID_OUTPUT_GEOMETRY = wxNewId();
-const long RunDialog::ID_DUMP_RESIDUAL = wxNewId();
+const long RunDialog::ID_DUMP_GEOMETRY = wxNewId();
 const long RunDialog::ID_OUTPUT_CHARGE = wxNewId();
+const long RunDialog::ID_DUMP_RESIDUAL = wxNewId();
 const long RunDialog::ID_DUMP_TIME_MEM = wxNewId();
 const long RunDialog::ID_VERBOSE_OUTPUT = wxNewId();
+const long RunDialog::ID_OUTPUT_CAPACITANCE = wxNewId();
 const long RunDialog::ID_PANEL1 = wxNewId();
 //*)
 
@@ -74,22 +76,22 @@ RunDialog::RunDialog(wxWindow* parent,wxWindowID )
 {
 	//(*Initialize(RunDialog)
 	wxStaticBoxSizer* StaticBoxSizer2;
-	wxFlexGridSizer* FlexGridSizer8;
-	wxGridSizer* GridSizer1;
-	wxFlexGridSizer* FlexGridSizer1;
-	wxFlexGridSizer* FlexGridSizer2;
-	wxStaticBoxSizer* StaticBoxSizer5;
-	wxFlexGridSizer* FlexGridSizer7;
 	wxFlexGridSizer* FlexGridSizer4;
-	wxFlexGridSizer* FlexGridSizer9;
-	wxStaticBoxSizer* StaticBoxSizer3;
-	wxFlexGridSizer* FlexGridSizer6;
-	wxFlexGridSizer* FlexGridSizer3;
 	wxStaticBoxSizer* StaticBoxSizer4;
-	wxBoxSizer* BoxSizer1;
+	wxFlexGridSizer* FlexGridSizer3;
 	wxFlexGridSizer* FlexGridSizer5;
-	wxStdDialogButtonSizer* StdDialogButtonSizer1;
+	wxFlexGridSizer* FlexGridSizer9;
+	wxFlexGridSizer* FlexGridSizer2;
+	wxFlexGridSizer* FlexGridSizer7;
+	wxStaticBoxSizer* StaticBoxSizer3;
+	wxGridSizer* GridSizer1;
+	wxFlexGridSizer* FlexGridSizer8;
+	wxBoxSizer* BoxSizer1;
+	wxFlexGridSizer* FlexGridSizer6;
 	wxStaticBoxSizer* StaticBoxSizer1;
+	wxFlexGridSizer* FlexGridSizer1;
+	wxStaticBoxSizer* StaticBoxSizer5;
+	wxStdDialogButtonSizer* StdDialogButtonSizer1;
 
 	Create(parent, wxID_ANY, _("Run Menu"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE, _T("wxID_ANY"));
 	BoxSizer1 = new wxBoxSizer(wxHORIZONTAL);
@@ -173,18 +175,24 @@ RunDialog::RunDialog(wxWindow* parent,wxWindowID )
 	CheckBox_Output_Geometry = new wxCheckBox(Panel1, ID_OUTPUT_GEOMETRY, _("Output refined geometry in FastCap2 format (-o)"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_OUTPUT_GEOMETRY"));
 	CheckBox_Output_Geometry->SetValue(false);
 	GridSizer1->Add(CheckBox_Output_Geometry, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
-	CheckBox_Dump_Residual = new wxCheckBox(Panel1, ID_DUMP_RESIDUAL, _("Dump Gmres residual at each iteration (-r)"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_DUMP_RESIDUAL"));
-	CheckBox_Dump_Residual->SetValue(false);
-	GridSizer1->Add(CheckBox_Dump_Residual, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
+	CheckBox_Dump_Geometry = new wxCheckBox(Panel1, ID_DUMP_GEOMETRY, _("Dump input geometry in FasterCap format and stop (-oi)"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_DUMP_GEOMETRY"));
+	CheckBox_Dump_Geometry->SetValue(false);
+	GridSizer1->Add(CheckBox_Dump_Geometry, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	CheckBox_Output_Charge = new wxCheckBox(Panel1, ID_OUTPUT_CHARGE, _("Dump charge densities in output file (-c)"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_OUTPUT_CHARGE"));
 	CheckBox_Output_Charge->SetValue(false);
 	GridSizer1->Add(CheckBox_Output_Charge, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
+	CheckBox_Dump_Residual = new wxCheckBox(Panel1, ID_DUMP_RESIDUAL, _("Dump Gmres residual at each iteration (-r)"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_DUMP_RESIDUAL"));
+	CheckBox_Dump_Residual->SetValue(false);
+	GridSizer1->Add(CheckBox_Dump_Residual, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
 	CheckBox_Dump_Time_Mem = new wxCheckBox(Panel1, ID_DUMP_TIME_MEM, _("Dump detailed time and memory information (-i)"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_DUMP_TIME_MEM"));
 	CheckBox_Dump_Time_Mem->SetValue(false);
 	GridSizer1->Add(CheckBox_Dump_Time_Mem, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
 	CheckBox_Verbose_Output = new wxCheckBox(Panel1, ID_VERBOSE_OUTPUT, _("Verbose output (-v)"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_VERBOSE_OUTPUT"));
 	CheckBox_Verbose_Output->SetValue(false);
 	GridSizer1->Add(CheckBox_Verbose_Output, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
+	CheckBox_Output_Capacitance = new wxCheckBox(Panel1, ID_OUTPUT_CAPACITANCE, _("Output capacitance matrix to file (-e)"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_OUTPUT_CAPACITANCE"));
+	CheckBox_Output_Capacitance->SetValue(false);
+	GridSizer1->Add(CheckBox_Output_Capacitance, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
 	StaticBoxSizer4->Add(GridSizer1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
 	FlexGridSizer1->Add(StaticBoxSizer4, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	StdDialogButtonSizer1 = new wxStdDialogButtonSizer();
@@ -284,6 +292,7 @@ void RunDialog::CopyVarsToDialog()
 	}
 	TextCtrl_Dim_Precond_Two_Levels->SetValue(wxString::Format("%u",  m_clsGlobalVars.m_uiSuperPreDim));
 	CheckBox_Output_Charge->SetValue(m_clsGlobalVars.m_bOutputCharge);
+    CheckBox_Output_Capacitance->SetValue(m_clsGlobalVars.m_bOutputCapMtx);
 	CheckBox_Dump_Residual->SetValue(m_clsGlobalVars.m_bDumpResidual);
 	CheckBox_Dump_Time_Mem->SetValue(m_clsGlobalVars.m_bDumpTimeMem);
 	CheckBox_Verbose_Output->SetValue(m_clsGlobalVars.m_bVerboseOutput);
@@ -294,6 +303,7 @@ void RunDialog::CopyVarsToDialog()
 		CheckBox_GalerkinScheme->SetValue(true);
 	}
 	CheckBox_Output_Geometry->SetValue(m_clsGlobalVars.m_bOutputGeo);
+	CheckBox_Dump_Geometry->SetValue(m_clsGlobalVars.m_bDumpInputGeo);
 }
 
 void RunDialog::CopyDialogToVars()
@@ -325,6 +335,7 @@ void RunDialog::CopyDialogToVars()
 	TextCtrl_Dim_Precond_Two_Levels->GetValue().ToULong(&tmpULong);
 	m_clsGlobalVars.m_uiSuperPreDim = (unsigned int) tmpULong;
 	m_clsGlobalVars.m_bOutputCharge = CheckBox_Output_Charge->GetValue();
+	m_clsGlobalVars.m_bOutputCapMtx = CheckBox_Output_Capacitance->GetValue();
 	m_clsGlobalVars.m_bDumpResidual = CheckBox_Dump_Residual->GetValue();
 	m_clsGlobalVars.m_bDumpTimeMem = CheckBox_Dump_Time_Mem->GetValue();
 	m_clsGlobalVars.m_bVerboseOutput = CheckBox_Verbose_Output->GetValue();
@@ -335,6 +346,7 @@ void RunDialog::CopyDialogToVars()
 		m_clsGlobalVars.m_cScheme = AUTOREFINE_GALERKIN;
 	}
 	m_clsGlobalVars.m_bOutputGeo = CheckBox_Output_Geometry->GetValue();
+	m_clsGlobalVars.m_bDumpInputGeo = CheckBox_Dump_Geometry->GetValue();
 }
 
 CAutoRefGlobalVars RunDialog::GetGlobalVars()

@@ -22,12 +22,118 @@
 ***************************************************************************/
 
 
-#include "CmdLineParser.h"
+#include "FasterCapConsole.h"
+
+#include "Solver/SolveCapacitance.h"
 
 #define CMDLINEPARSER_MAX_INPUT_STR_LEN     4094
 
+#ifdef FCG_HEADLESS
+
+int main(int argc, char **argv)
+{
+    int ret;
+
+    FasterCapConsole console;
+
+    ret = console.main(argc, argv);
+
+    return ret;
+}
+
+int FasterCapConsole::main(int& argc, char **argv, char bOption)
+#else
+int FasterCapConsole::main(int& argc, wxChar **argv, char bOption)
+#endif // FCG_HEADLESS
+{
+    bool ret;
+	CSolveCap solveMain;
+	int i, retStatus;
+	wxString inputArgs, errMsg;
+	CAutoRefGlobalVars globalVars, defGlobalVars;
+
+	// copy input arguments in a string for proper parsing (e.g. taking care of file names with spaces)
+	inputArgs.Clear();
+	for(i=1; i<argc; i++) {
+		inputArgs += argv[i];
+		// this puts an extra trailing space in the end but that's ok anyway for the parser
+		inputArgs += wxT(" ");
+	}
+
+	// dump command args for debug
+	//printf("%s\n", (const char*)inputArgs);
+
+	// parse command line
+	ret = ParseCmdLine((const char*)inputArgs, globalVars, errMsg);
+
+	// if no parser error
+	if(ret == false && bOption != '?' && bOption != 'v') {
+		// actually run FasterCap
+		retStatus = FC_NORMAL_END;
+		retStatus = solveMain.Run(globalVars);
+	}
+	else {
+		if(bOption == '?' || bOption == 'v') {
+			retStatus = FC_NORMAL_END;
+			errMsg = wxT("");
+		}
+		else {
+			retStatus = FC_COMMAND_LINE_ERROR;
+		}
+
+		LogMsg(FCG_HEADER_VERSION);
+		LogMsg("\n");
+		LogMsg(FCG_HEADER_COPYRIGHT);
+		LogMsg(" ");
+		LogMsg(FCG_HEADER_WEBSITE);
+		LogMsg("\n");
+
+		if(bOption != 'v') {
+			// print error
+			ErrMsg((const char*)errMsg);
+			LogMsg("Usage: %s <input file> [-a<relative error>] [-ap]\n", (const char*)argv[0]);
+			LogMsg("                 [-m<mesh>] [-mc<mesh curvature] [-t<tolerance>]\n");
+			LogMsg("                 [-d<interaction coeff>] [-f<outofcore>] [-g]\n");
+			LogMsg("                 [-pj] [-ps<dimension>] [-o] [-r] [-c] [-i] [-v]\n");
+			LogMsg("                 [-b|-b?|-bv]\n");
+			LogMsg("DEFAULT VALUES:\n");
+			LogMsg("  -a:  Automatically calculate settings, stop when\n");
+			LogMsg("       relative error is lower than <relative error>, e.g. 0.01\n");
+			LogMsg("  -ap: Automatic preconditioner usage\n");
+			LogMsg("  -m:  Mesh relative refinement value = %g\n", defGlobalVars.m_dMeshEps);
+			LogMsg("  -mc: Mesh curvature coefficient = %g\n", defGlobalVars.m_dMeshCurvCoeff);
+			LogMsg("  -t:  GMRES iteration tolerance = %g\n", defGlobalVars.m_dGmresTol);
+			LogMsg("  -d:  Direct potential interaction coefficient to mesh refinement ratio = %g\n", defGlobalVars.m_dEpsRatio);
+			LogMsg("  -f:  Out-Of-Core free memory to link memory condition = %g\n", defGlobalVars.m_dOutOfCoreRatio);
+			LogMsg("  -g:  Use Galerkin scheme\n");
+			LogMsg("  -pj: Use Jacobi Preconditioner\n");
+			LogMsg("  -ps: Use two-levels preconditioner with dimension = %d\n", defGlobalVars.m_uiSuperPreDim);
+			LogMsg("OPTIONS:\n");
+			LogMsg("  -o:  Output refined geometry in FastCap2 format\n");
+			LogMsg("  -oi: Dump input geometry in FasterCap format and stop\n");
+			LogMsg("  -e:  Output capacitance matrix to file\n");
+			LogMsg("  -r:  Dump Gmres residual at each iteration\n");
+			LogMsg("  -c:  Dump charge densities in output file\n");
+			LogMsg("  -i:  Dump detailed time and memory information\n");
+			LogMsg("  -v:  Verbose output\n");
+			LogMsg("  -b:  Launch as console/shell application without GUI\n");
+			LogMsg("  -b?: Print console usage (this text)\n");
+			LogMsg("  -bv: Print only the version\n");
+#ifndef __WXMSW__
+			LogMsg("  -h: Open only the help system\n");
+#endif
+		}
+	}
+
+	// if return code is an error, print it
+	solveMain.PrintRetError(retStatus);
+
+	return retStatus;
+}
+
+
 // returns 'true' if errors in the parsing
-bool CmdLineParser::ParseCmdLine(const char *commandStr, CAutoRefGlobalVars &globalVars, wxString &errMsg)
+bool FasterCapConsole::ParseCmdLine(const char *commandStr, CAutoRefGlobalVars &globalVars, wxString &errMsg)
 {
 	char argStr[CMDLINEPARSER_MAX_INPUT_STR_LEN], *cmdStr;
 	int res, skip;
@@ -59,17 +165,8 @@ bool CmdLineParser::ParseCmdLine(const char *commandStr, CAutoRefGlobalVars &glo
 	while(res != 0 && res != EOF && cmderr != true) {
 		if(argStr[0] == '-') {
 
-			// '-e' is tolerance for refinement
-			if(argStr[1] == 'e') {
-				if(sscanf(&(argStr[2]), "%lf", &(globalVars.m_dEps)) != 1) {
-					cmderr = true;
-					//errMsg = wxString::Format(wxT("%s: bad mutual potential epsilon value '%s'\n"), commandStr, &argStr[2]);
-					errMsg = wxString::Format(wxT("%s: unsupported parameter '%s'\n"), commandStr, argStr);
-				}
-			}
-
 			// '-s' is maximum side left after discretization
-			else if(argStr[1] == 's') {
+			if(argStr[1] == 's') {
 				if(sscanf(&(argStr[2]), "%lf", &(globalVars.m_dMaxDiscSide)) != 1) {
 					cmderr = true;
 					//errMsg = wxString::Format(wxT("%s: bad side discretization value '%s'\n"), commandStr, &argStr[2]);
@@ -157,6 +254,11 @@ bool CmdLineParser::ParseCmdLine(const char *commandStr, CAutoRefGlobalVars &glo
 				}
 			}
 
+			// '-c' is dump charge densities in output file
+			else if(argStr[1] == 'c') {
+                globalVars.m_bOutputCharge = true;
+			}
+			
 			// '-kc' is keep charge information after termination
 			else if(argStr[1] == 'k') {
 				if(argStr[2] == 'c') {
@@ -199,9 +301,21 @@ bool CmdLineParser::ParseCmdLine(const char *commandStr, CAutoRefGlobalVars &glo
 				}
 			}
 
-			// '-o' is output refined geometry to file (in FastCap2 format)
+			// '-o' is output refined geometry to file (in FastCap2 format),
+			// '-oi' is dump input geometry, no refinement, in FastCap2 format and stop
+			//       (so actual value of 'm_bOutputGeo' does not matter)
 			else if(argStr[1] == 'o') {
-				globalVars.m_bOutputGeo = true;
+				if(argStr[2] == 'i') {
+					globalVars.m_bDumpInputGeo = true;
+				}
+				else {
+                    globalVars.m_bOutputGeo = true;
+				}
+			}
+
+			// '-e' is output capacitance matrix to file
+			else if(argStr[1] == 'e') {
+				globalVars.m_bOutputCapMtx = true;
 			}
 
 			// '-g' is galerkin scheme (as opposite to default collocation)
@@ -245,7 +359,7 @@ bool CmdLineParser::ParseCmdLine(const char *commandStr, CAutoRefGlobalVars &glo
 // Special version of sscanf which handles also file names with spaces inside,
 // provided they are surrounded by '"'.
 // Note that this routine is specialized to retrieve only strings
-int CmdLineParser::getSubstring(const char *buffer, char *substr, int *skip)
+int FasterCapConsole::getSubstring(const char *buffer, char *substr, int *skip)
 {
 	int res, openPos, deltaClosePos, startPos;
 	char *openPosPtr, *closePosPtr, tmpStr[256];
@@ -297,3 +411,4 @@ int CmdLineParser::getSubstring(const char *buffer, char *substr, int *skip)
 
 	return res;
 }
+

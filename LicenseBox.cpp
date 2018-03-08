@@ -72,7 +72,7 @@ LicenseBox::LicenseBox(wxWindow* parent,wxWindowID )
 	Panel1 = new wxPanel(this, ID_PANEL1, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _T("ID_PANEL1"));
 	FlexGridSizer1 = new wxFlexGridSizer(3, 1, 0, 0);
 	BoxSizer2 = new wxBoxSizer(wxVERTICAL);
-	StaticText_Header1 = new wxStaticText(Panel1, ID_STATICTEXT_HEADER1, _("FasterCap License"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT_HEADER1"));
+	StaticText_Header1 = new wxStaticText(Panel1, ID_STATICTEXT_HEADER1, _("FasterCap Demo License"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT_HEADER1"));
 	BoxSizer2->Add(StaticText_Header1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	StaticText_Header2 = new wxStaticText(Panel1, ID_STATICTEXT_HEADER2, _("Please contact FastFieldSolvers S.r.l. if you wish to purchase a commercial license"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT_HEADER2"));
 	BoxSizer2->Add(StaticText_Header2, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);

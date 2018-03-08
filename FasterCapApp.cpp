@@ -33,7 +33,7 @@
 #include <wx/wfstream.h>
 #include <wx/stdpaths.h>
 
-#include "CmdLineParser.h"
+#include "FasterCapConsole.h"
 #include "FasterCapGlobal.h"
 #include "Solver/SolveCapacitance.h"
 
@@ -105,7 +105,7 @@ bool FasterCapApp::OnInit()
 	wxString inputArgs, errMsg, dirPath;
 	CSolveCap solveMain;
 	CAutoRefGlobalVars globalVars;
-	CmdLineParser parser;
+	FasterCapConsole console;
 	char bOption;
 	wxFileName fileName;
 
@@ -339,81 +339,10 @@ else {
 	// console file handlers for stdin / out / err must be reopened, and
 	// in any case the prompt has already returned, writing a new prompt line
 	//if(AttachConsole(ATTACH_PARENT_PROCESS) == 0 ) {
-	//    wxMessageBox("The process was started with the Console option set, but it cannot detect any launching console\n(maybe you started the applicaton from an icon shortcut passing the wrong command line parameters?)");
+	//    wxMessageBox("The process was started with the Console option set, but it cannot detect any launching console\n(maybe you started the application from an icon shortcut passing the wrong command line parameters?)");
 	//}
 
-	// copy input arguments in a string for proper parsing (e.g. taking care of file names with spaces)
-	inputArgs.Clear();
-	for(i=1; i<argc; i++) {
-		inputArgs += argv[i];
-		// this puts an extra trailing space in the end but that's ok anyway for the parser
-		inputArgs += wxT(" ");
-	}
-
-	// dump command args for debug
-	//printf("%s\n", (const char*)inputArgs);
-
-	// parse command line
-	ret = parser.ParseCmdLine((const char*)inputArgs, globalVars, errMsg);
-
-	// if no parser error
-	if(ret == false && bOption != '?' && bOption != 'v') {
-		// actually run FasterCap
-		m_iRetStatus = FC_NORMAL_END;
-		m_iRetStatus = solveMain.Run(globalVars);
-	}
-	else {
-		if(bOption == '?' || bOption == 'v') {
-			m_iRetStatus = FC_NORMAL_END;
-			errMsg = wxT("");
-		}
-		else {
-			m_iRetStatus = FC_COMMAND_LINE_ERROR;
-		}
-
-		LogMsg(FCG_HEADER_VERSION);
-		LogMsg("\n");
-		LogMsg(FCG_HEADER_COPYRIGHT);
-		LogMsg(" ");
-		LogMsg(FCG_HEADER_WEBSITE);
-		LogMsg("\n");
-
-		if(bOption != 'v') {
-			// print error
-			ErrMsg((const char*)errMsg);
-			LogMsg("Usage: %s <input file> [-a<relative error>] [-ap]\n", (const char*)argv[0]);
-			LogMsg("                 [-m<mesh>] [-mc<mesh curvature] [-t<tolerance>]\n");
-			LogMsg("                 [-d<interaction coeff>] [-f<outofcore>] [-g]\n");
-			LogMsg("                 [-pj] [-ps<dimension>] [-o] [-r] [-c] [-i] [-v]\n");
-			LogMsg("                 [-b|-b?|-bv]\n");
-			LogMsg("DEFAULT VALUES:\n");
-			LogMsg("  -a:  Automatically calculate settings, stop when relative error is lower than = %g\n", globalVars.m_dAutoMaxErr);
-			LogMsg("  -ap: Automatic preconditioner usage\n");
-			LogMsg("  -m:  Mesh relative refinement value = %g\n", globalVars.m_dMeshEps);
-			LogMsg("  -mc: Mesh curvature coefficient = %g\n", globalVars.m_dMeshCurvCoeff);
-			LogMsg("  -t:  GMRES iteration tolerance = %g\n", globalVars.m_dGmresTol);
-			LogMsg("  -d:  Direct potential interaction coefficient to mesh refinement ratio = %g\n", globalVars.m_dEpsRatio);
-			LogMsg("  -f:  Out-Of-Core free memory to link memory condition = %g\n", globalVars.m_dOutOfCoreRatio);
-			LogMsg("  -g:  Use Galerkin scheme\n");
-			LogMsg("  -pj: Use Jacobi Preconditioner\n");
-			LogMsg("  -ps: Use two-levels preconditioner with dimension = %g\n", globalVars.m_uiSuperPreDim);
-			LogMsg("OPTIONS:\n");
-			LogMsg("  -o:  Output refined geometry in FastCap2 format\n");
-			LogMsg("  -r:  Dump Gmres residual at each iteration\n");
-			LogMsg("  -c:  Dump charge densities in output file\n");
-			LogMsg("  -i:  Dump detailed time and memory information\n");
-			LogMsg("  -v: Verbose output\n");
-			LogMsg("  -b: Launch as console/shell application without GUI\n");
-			LogMsg("  -b?: Print console usage (this text)\n");
-			LogMsg("  -bv: Print only the version\n");
-#ifndef __WXMSW__
-			LogMsg("  -h: Open only the help system\n");
-#endif
-		}
-	}
-
-	// if return code is an error, print it
-	PrintRetError(m_iRetStatus);
+    console.main(argc, argv, bOption);
 }
 
 // return true to contine execution; console vs. GUI is resolved inside OnRun()

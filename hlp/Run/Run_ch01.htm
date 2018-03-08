@@ -81,8 +81,13 @@ The FasterCap Run Menu dialog box contains many options. In the following, the d
   <li><b>'Output refined geometry in FastCap2 format (-o)'</b> dumps the FasterCap mesh geometry at the end of the refinement phase to a set of files, in the same directory of the input file. These files are in FastCap2 compatible format, so can be input to FastCap2 and to FastModel. This option is useful for instance for comparison of FasterCap results with FastCap2 results, or to see the refined mesh in FasterCap. Please be aware however that for high levels of refinement the output files can be huge, and can also take some time to be stored on the mass memory device. 
   <br>The main file is named as the specified input file, with the extension '_ref.lst'. All the other input files are referenced inside this main file.
 
+  <li><b>'Dump input geometry in FasterCap format and stop (-oi)'</b> dumps the input geometry just after finishing reading it (i.e. with no refinement) to a set of files, in the same directory of the input file, and then stops. These files are in FasterCap format, and are a dump of the internal FasterCap representation; for instance, all panels are already translated. This option is mainly useful for checking the input file correctness, e.g. to see if FasterCap flags any error, or to flatten a hierarchical set of input files. 
+  <br>The main file is named as the specified input file, with the extension '_dump.lst'. All the other input files are referenced inside this main file.
+
   <li><b>'Dump Gmres residual at each iteration (-r)'</b> causes FasterCap to dump at each iteration of the iterative solver the relative residual GMRES error near the iteration number.
-  
+
+  <li><b>'Output capacitance matrix to file (-e)'</b> outputs the resulting capacitance matrix to file in comma-separated value (CSV) format. The capacitance matrix file is named as the specified input file, with the extension '.csv'.
+
   <li><b>'Dump charge densities in output file (-c)'</b> dumps a set of FasterCap mesh geometries containing charge densities information. One set of files is output, in the same directory of the input file, for each conductor specified. These files are in FastModel compatible format, so they can be loaded into FastModel for charge density visualization.  Please be aware however that for high levels of refinement the output files can be huge, and can also take some time to be stored on the mass memory device. 
   <br>The main files are named after the specified input file, merged with the conductor name, with the extension '.lst'. All the other input files are referenced inside the main files.
   
