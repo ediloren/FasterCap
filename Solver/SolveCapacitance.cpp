@@ -1971,12 +1971,6 @@ void CSolveCap::RecurseComputePrecond(CAutoElement* element)
 		RecurseComputePrecond(element->m_pLeft);
 		RecurseComputePrecond(element->m_pRight);
 
-		// only if using Block precond, store current leaf element in the block precond elements array
-		if( (m_clsGlobalVars.m_ucPrecondType & AUTOREFINE_PRECOND_BLOCK) != 0 && calculateBlock == true) {
-			m_bIsComputingBlock = false;
-			ComputeBlockPrecond();
-		}
-
 		// only if using Super precond or Hier precond and Super precond can be used to accelerate iterations
 		if(m_clsGlobalVars.m_ucPrecondType & AUTOREFINE_PRECOND_SUPER) {
 
@@ -1987,6 +1981,12 @@ void CSolveCap::RecurseComputePrecond(CAutoElement* element)
 				IncrementSupPreNum();
 			}
 		}
+	}
+
+	// Finish the block even when its root is a leaf.
+	if(calculateBlock) {
+		m_bIsComputingBlock = false;
+		ComputeBlockPrecond();
 	}
 
 	m_iLevel--;
