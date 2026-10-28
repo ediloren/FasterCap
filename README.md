@@ -21,7 +21,7 @@ The following software tools and complier chains are required. Used versions are
 
 ###  MS Windows 64 bits
 
-- CMake 3.6.0
+- CMake 3.12
 - Code::Blocks, version 13.12
 - TDM-GCC 64 bits, version 4.8.1
 - wxWidgets, version 3.0
@@ -36,7 +36,7 @@ The following software tools and complier chains are required. Used versions are
 
 ###  Linux 64 bits
 
-- CMake 2.8.12
+- CMake 3.12
 - Code::Blocks, version 13.12
 - GCC, version 4.8.1
 - wxWidgets (wxGTK), version 3.0
@@ -55,7 +55,7 @@ Then you can open Code::Blocks, open the FasterCap.cbp project file created by C
 
 ###  Linux 64 bits headless
 
-- CMake 3.5.1
+- CMake 3.12
 - GCC, version 4.8.1 or higher (higher version tested: on 5.4.0)
 - wxWidgets, version 3.0.2 or higher (higher version tested: 3.0.2)
 

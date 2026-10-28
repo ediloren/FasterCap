@@ -1,5 +1,5 @@
 # minimum version is 3.0 to be able to handle Eigen library
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.12)
 project (FasterCap)
 
 # main project specific settings
@@ -31,12 +31,19 @@ endif()
 # so that code knows whether it needs to #include config.h
 #add_definitions(-DHAVE_CONFIG_H)
 #
-# List of options to pass to the compiler (note this is a CMake list. Do not enclose in ")
-set(FASTFIELDSOLVERS_COMPILE_OPTIONS ${FASTFIELDSOLVERS_COMPILE_OPTIONS} -Wextra -Wall -fopenmp)
-# -fopenmp: use OpenMP pragmas
-# -lm: link the math library
-# -lstdc++: link the standard c++ library (needed for headless)
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fopenmp -lm -lstdc++")
+
+find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+    set (EXTRA_LIBS ${EXTRA_LIBS} OpenMP::OpenMP_CXX)
+else()
+    message(FATAL_ERROR "Unable to find OpenMP. Try exporting the OpenMP_ROOT environmental variable. E.g., on macOS: export OpenMP_ROOT=$(brew --prefix)/opt/libomp")
+endif()
+
+
+if (NOT MSVC)
+  set(FASTFIELDSOLVERS_COMPILE_OPTIONS ${FASTFIELDSOLVERS_COMPILE_OPTIONS} -Wextra -Wall)
+endif()
+
 # -s: strip all symbols from the executable
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -s")
 
@@ -123,6 +130,9 @@ if(${FASTFIELDSOLVERS_HEADLESS} MATCHES OFF)
 endif()
 
 add_executable (FasterCap ${FastFieldSolvers_Sources} ${FasterCap_Sources})
+
+set (EXTRA_LIBS ${EXTRA_LIBS}  -lm -lstdc++)
+
 # Specify compile options to use when compiling a given target.
 target_compile_options(FasterCap PUBLIC ${FASTFIELDSOLVERS_COMPILE_OPTIONS})
 target_link_libraries(FasterCap ${EXTRA_LIBS} ${WXWIDGETS_LIBS} ${EIGEN_LIBS})
