@@ -37,11 +37,22 @@
 #include <float.h>
 // for _chdir()
 //#include <direct.h>
+
 // for openmp
 #include "omp.h"
 
 // for wxGetFreeMemory()
 #include <wx/utils.h> 
+
+#ifdef __DARWIN__
+#include <mach/mach.h>
+#endif
+
+#ifdef __LINUX__
+#include <fstream>
+#include <stdlib.h>
+#endif
+
 
 #include "SolverGlobal.h"
 
@@ -105,6 +116,57 @@
 
 // init static vars
 unsigned long CAutoRefine::m_ulTempFileID = 1;
+
+// wxGetFreeMemory() replacement,
+// as it does not work on UNIX platforms (Linux, macOS, ...)
+// Returns -1 if the free memory is unknown, as wxGetFreeMemory() does
+wxMemorySize portableGetFreeMemory() {
+    wxMemorySize freeMemory = -1;
+    
+#ifdef __LINUX__
+    // NOTE: unfortunatly, <sys/sysinfo.h> does not include the MemAvailable (only MemFree),
+    //       so we have to parse /proc/meminfo
+    std::ifstream inputStream("/proc/meminfo");
+    std::string keyword("MemAvailable:");
+    std::string suffix(" kB");
+    std::string line;
+    while (std::getline(inputStream, line)) {
+        if (line.substr(0, keyword.size()) == keyword) {
+            if (line.substr(line.size() - suffix.size(), suffix.size()) != suffix) {
+                    std::cerr << "ERROR: expected /proc/meminfo line to end with suffix '" << suffix
+                              << "', but obtained line: " << line << std::endl;
+                    break;
+            }
+            const std::string memAvail = line.substr(keyword.size());
+            char *end = NULL;
+            unsigned long kiloBytes = strtoul(memAvail.c_str(), &end, 10);
+            if (end != memAvail.c_str()) {
+                freeMemory = kiloBytes;
+                freeMemory *= 1024;
+            }
+            break;
+        }
+    }
+#else
+#ifdef __DARWIN__
+    // free and inactive pages can be used without swapping
+    // (hw.memsize_usable would be the installed memory)
+    mach_port_t host = mach_host_self();
+    vm_size_t pageSize;
+    vm_statistics64_data_t vmStats;
+    mach_msg_type_number_t count = HOST_VM_INFO64_COUNT;
+    if (host_page_size(host, &pageSize) == KERN_SUCCESS &&
+        host_statistics64(host, HOST_VM_INFO64, (host_info64_t)&vmStats, &count) == KERN_SUCCESS) {
+        freeMemory = (wxLongLong_t)(vmStats.free_count + vmStats.inactive_count) * (wxLongLong_t)pageSize;
+    }
+    mach_port_deallocate(mach_task_self(), host);
+#else
+    freeMemory = wxGetFreeMemory();
+#endif
+#endif
+    
+    return freeMemory;
+}
 
 CAutoRefine::CAutoRefine()
 {
@@ -522,7 +584,7 @@ int CAutoRefine::AutoRefineLinks(CAutoRefGlobalVars globalVars)
 	mem_LinksTotal = mem_Potest + mem_pCharge;
 
 	// get available memory
-	mem_AvailVirtual = (wxLongLong) wxGetFreeMemory();
+	mem_AvailVirtual = (wxLongLong) portableGetFreeMemory();
 // debug
 //mem_AvailVirtual = 50000000;
 
@@ -1068,7 +1130,7 @@ void CAutoRefine::DumpMemoryInfo()
 	wxLongLong freeMem;
 
 	// get available memory
-	freeMem = (wxLongLong) wxGetFreeMemory();
+	freeMem = (wxLongLong) portableGetFreeMemory();
 
 	LogMsg("Available virtual memory: %lu kilobytes\n", (freeMem/G_KILOBYTE).ToLong());
 
