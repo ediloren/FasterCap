@@ -79,7 +79,7 @@ LicenseBox::LicenseBox(wxWindow* parent,wxWindowID )
 	StaticText_Header3 = new wxStaticText(Panel1, ID_STATICTEXT_HEADER3, _("http://www.fastfieldsolvers.com"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT_HEADER3"));
 	BoxSizer2->Add(StaticText_Header3, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer1->Add(BoxSizer2, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-	TextCtrl_License = new wxTextCtrl(Panel1, ID_TEXTCTRL_LICENSE, _("License"), wxDefaultPosition, wxSize(400,300), wxTE_AUTO_SCROLL|wxTE_MULTILINE|wxTE_WORDWRAP, wxDefaultValidator, _T("ID_TEXTCTRL_LICENSE"));
+	TextCtrl_License = new wxTextCtrl(Panel1, ID_TEXTCTRL_LICENSE, _("License"), wxDefaultPosition, wxSize(400,300), wxTE_MULTILINE|wxTE_WORDWRAP, wxDefaultValidator, _T("ID_TEXTCTRL_LICENSE"));
 	FlexGridSizer1->Add(TextCtrl_License, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	StdDialogButtonSizer1 = new wxStdDialogButtonSizer();
 	StdDialogButtonSizer1->AddButton(new wxButton(Panel1, wxID_OK, _("I accept")));

@@ -51,7 +51,7 @@ set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -s")
 # $<CONFIG:Debug> generates 1 or 0 if CONFIG is Debug or not. Then we use the conditional
 # expression $<condition:true_string>, so if the previous evaluates to 1, here the string is "--debug",
 # otherwise nothing.
-set(wxWidgets_CONFIG_OPTIONS --version=3.0 --static=no $<$<CONFIG:Debug>:--debug>)
+set(wxWidgets_CONFIG_OPTIONS --static=no $<$<CONFIG:Debug>:--debug>)
 # these flags are BUILD_TYPE dependent
 # -D__WXDEBUG__: define that wxWidgets are in debug version
 #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D__WXDEBUG__")
